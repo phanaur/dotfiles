@@ -15,7 +15,7 @@ auto-format = true
 
 [language-server.omnisharp]
 command = "omnisharp"
-args = ["-lsp"]
+args = ["--languageserver"]
 
 [language.debugger]
 name = "netcoredbg"

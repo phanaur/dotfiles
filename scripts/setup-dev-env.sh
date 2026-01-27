@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Setup Development Environment for Fedora 43
+# Setup Development Environment (multi-distro)
 # Configures LazyVim + Helix with all language servers and modern features
 # ============================================================================
 
@@ -30,13 +30,90 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running on Fedora
-if [ ! -f /etc/fedora-release ]; then
-    log_error "This script is designed for Fedora. Exiting."
-    exit 1
+# Detect distribution and select package manager
+log_info "Detecting Linux distribution..."
+PKG_MANAGER=""
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    distro_id="$(echo "$ID" | tr '[:upper:]' '[:lower:]')"
+    distro_like="$(echo "${ID_LIKE:-}" | tr '[:upper:]' '[:lower:]')"
+else
+    distro_id=""
+    distro_like=""
 fi
 
-log_info "Starting development environment setup for Fedora 43..."
+case "$distro_id" in
+    ubuntu|debian)
+        PKG_MANAGER="apt"
+        ;;
+    arch)
+        PKG_MANAGER="pacman"
+        ;;
+    fedora)
+        PKG_MANAGER="dnf"
+        ;;
+    opensuse*|suse)
+        PKG_MANAGER="zypper"
+        ;;
+    *)
+        if echo "$distro_like" | grep -q "debian"; then
+            PKG_MANAGER="apt"
+        elif echo "$distro_like" | grep -q "rhel\|fedora"; then
+            PKG_MANAGER="dnf"
+        fi
+        ;;
+esac
+
+if [ -z "$PKG_MANAGER" ]; then
+    log_warning "Could not detect supported package manager from /etc/os-release; continuing but some automatic installs may fail."
+else
+    log_success "Detected package manager: $PKG_MANAGER"
+fi
+
+# Package manager wrappers
+pkg_update() {
+    case "$PKG_MANAGER" in
+        apt)
+            sudo apt update -y || sudo apt update
+            ;;
+        pacman)
+            sudo pacman -Syu --noconfirm
+            ;;
+        dnf)
+            sudo dnf update -y
+            ;;
+        zypper)
+            sudo zypper refresh && sudo zypper -n update
+            ;;
+        *)
+            log_warning "No supported package manager detected"
+            return 1
+            ;;
+    esac
+}
+
+pkg_install() {
+    case "$PKG_MANAGER" in
+        apt)
+            sudo apt install -y "$@"
+            ;;
+        pacman)
+            sudo pacman -S --noconfirm "$@"
+            ;;
+        dnf)
+            sudo dnf install -y "$@"
+            ;;
+        zypper)
+            sudo zypper -n install "$@"
+            ;;
+        *)
+            log_warning "No supported package manager detected"
+            return 1
+            ;;
+    esac
+}
+
+log_info "Starting development environment setup..."
 
 # ============================================================================
 # 1. System Package Installation
@@ -45,20 +122,23 @@ log_info "Starting development environment setup for Fedora 43..."
 log_info "Installing system packages..."
 
 # Update system
-sudo dnf update -y
+pkg_update
 
 # Install Neovim (latest stable)
 log_info "Installing Neovim..."
-sudo dnf install -y neovim
+pkg_install neovim
 
 # Install Helix
 log_info "Installing Helix..."
-sudo dnf install -y helix
+pkg_install helix
 
 # Install .NET SDK 10
 log_info "Installing .NET SDK 10..."
 if ! command -v dotnet &> /dev/null; then
-    sudo dnf install -y dotnet-sdk-10.0
+    log_info "Installing .NET SDK (if available via package manager)..."
+    if ! pkg_install dotnet-sdk-10.0 2>/dev/null; then
+        log_warning ".NET SDK package not available via package manager. Skipping; install manually from https://dotnet.microsoft.com/download"
+    fi
 else
     log_success ".NET SDK already installed: $(dotnet --version)"
 fi
@@ -78,27 +158,31 @@ rustup component add rustfmt clippy
 
 # Install Node.js and npm
 log_info "Installing Node.js and npm..."
-sudo dnf install -y nodejs npm
+pkg_install nodejs npm
 
 # Install Python and pip
 log_info "Installing Python..."
-sudo dnf install -y python3 python3-pip
+pkg_install python3 python3-pip
 
 # Install Go
 log_info "Installing Go..."
 if ! command -v go &> /dev/null; then
-    sudo dnf install -y golang
+    pkg_install golang || pkg_install go || log_warning "Go package not available via package manager; install manually from https://golang.org/dl/"
 else
     log_success "Go already installed: $(go version)"
 fi
 
 # Install build tools
 log_info "Installing build tools..."
-sudo dnf install -y gcc gcc-c++ clang clang-tools-extra make cmake
+pkg_install gcc gcc-c++ clang clang-tools-extra make cmake
 
 # Install additional tools
 log_info "Installing additional tools..."
-sudo dnf install -y git curl wget unzip ripgrep fd-find
+pkg_install git curl wget unzip ripgrep fd-find || true
+# On some distros fd-find is called 'fd' or 'fdfind'
+if ! command -v fd &> /dev/null && command -v fdfind &> /dev/null; then
+    ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd" || true
+fi
 
 # ============================================================================
 # 2. Language Servers and Formatters Installation
@@ -112,21 +196,24 @@ pip3 install --user pyright black
 
 # TypeScript tools
 log_info "Installing TypeScript tools..."
-sudo npm install -g typescript typescript-language-server prettier
+npm install -g typescript typescript-language-server prettier 2>/dev/null || sudo npm install -g typescript typescript-language-server prettier
 
 # YAML tools
 log_info "Installing YAML language server..."
-sudo npm install -g yaml-language-server
+npm install -g yaml-language-server 2>/dev/null || sudo npm install -g yaml-language-server
 
 # JSON/HTML/CSS language servers
 log_info "Installing VSCode language servers..."
-sudo npm install -g vscode-langservers-extracted
+npm install -g vscode-langservers-extracted 2>/dev/null || sudo npm install -g vscode-langservers-extracted
 
 # Markdown tools
 log_info "Installing Markdown tools (marksman)..."
 MARKSMAN_VERSION="2023-12-09"
 if ! command -v marksman &> /dev/null; then
+    # Try distro package first, else download binary
+if ! pkg_install marksman 2>/dev/null; then
     wget -q "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-x64" -O /tmp/marksman
+fi
     chmod +x /tmp/marksman
     sudo mv /tmp/marksman /usr/local/bin/marksman
 fi
