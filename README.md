@@ -2,6 +2,17 @@
 
 Configuración completa de Neovim (LazyVim) y Helix para desarrollo en C#, Rust, Python, TypeScript y más.
 
+## 🐧 Distribuciones Soportadas
+
+Los scripts de instalación son compatibles con las principales distribuciones Linux:
+
+- ✅ **Ubuntu / Debian / Linux Mint / Pop!_OS** (apt)
+- ✅ **Fedora** (dnf)
+- ✅ **Arch Linux / Manjaro / EndeavourOS** (pacman)
+- ✅ **openSUSE / SLES** (zypper)
+
+El script detecta automáticamente tu distribución y usa el gestor de paquetes apropiado.
+
 ## 📦 Contenido del Repositorio
 
 ### Estructura Recomendada:
