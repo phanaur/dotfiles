@@ -1,0 +1,218 @@
+# ============================================================================
+# LANGUAGE SERVERS CONFIGURATION FOR HELIX
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# C# Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "c-sharp"
+scope = "source.cs"
+roots = ["*.sln", "*.csproj"]
+language-servers = ["omnisharp"]
+formatter = { command = "csharpier", args = ["format", "--write-stdout"] }
+auto-format = true
+
+[language-server.omnisharp]
+command = "omnisharp"
+args = ["-lsp"]
+
+[language.debugger]
+name = "netcoredbg"
+transport = "tcp"
+command = "netcoredbg"
+args = ["--interpreter=vscode"]
+
+[[language.debugger.templates]]
+name = "Launch"
+request = "launch"
+completion = [{ name = "path to binary", completion = "filename" }]
+args = { console = "internalConsole", program = "{0}" }
+
+# -----------------------------------------------------------------------------
+# Rust Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "rust"
+language-servers = ["rust-analyzer"]
+formatter = { command = "rustfmt", args = ["--edition", "2021"] }
+auto-format = true
+
+[language-server.rust-analyzer]
+command = "rust-analyzer"
+
+[language-server.rust-analyzer.config]
+check.command = "clippy"
+diagnostics.enable = true
+inlayHints.enable = true
+cargo.loadOutDirsFromCheck = true
+
+# -----------------------------------------------------------------------------
+# C/C++ Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "c"
+language-servers = ["clangd"]
+formatter = { command = "clang-format" }
+auto-format = true
+
+[[language]]
+name = "cpp"
+language-servers = ["clangd"]
+formatter = { command = "clang-format" }
+auto-format = true
+
+[language-server.clangd]
+command = "clangd"
+args = ["--background-index", "--clang-tidy", "--completion-style=detailed"]
+
+# -----------------------------------------------------------------------------
+# Python Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "python"
+language-servers = ["pyright"]
+formatter = { command = "black", args = ["--quiet", "-"] }
+auto-format = true
+
+[language-server.pyright]
+command = "pyright-langserver"
+args = ["--stdio"]
+
+[language-server.pyright.config.python.analysis]
+typeCheckingMode = "basic"
+diagnosticMode = "workspace"
+autoImportCompletions = true
+
+# -----------------------------------------------------------------------------
+# JavaScript/TypeScript Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "javascript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "typescript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "jsx"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[language-server.typescript-language-server]
+command = "typescript-language-server"
+args = ["--stdio"]
+
+[language-server.typescript-language-server.config]
+hostInfo = "helix"
+
+# -----------------------------------------------------------------------------
+# YAML Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "yaml"
+language-servers = ["yaml-language-server"]
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+auto-format = true
+
+[language-server.yaml-language-server]
+command = "yaml-language-server"
+args = ["--stdio"]
+
+[language-server.yaml-language-server.config.yaml]
+format.enable = true
+validation = true
+hover = true
+completion = true
+
+# -----------------------------------------------------------------------------
+# TOML Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "toml"
+language-servers = ["taplo"]
+formatter = { command = "taplo", args = ["format", "-"] }
+auto-format = true
+
+[language-server.taplo]
+command = "taplo"
+args = ["lsp", "stdio"]
+
+# -----------------------------------------------------------------------------
+# JSON Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "json"
+language-servers = ["vscode-json-language-server"]
+formatter = { command = "prettier", args = ["--parser", "json"] }
+auto-format = true
+
+[language-server.vscode-json-language-server]
+command = "vscode-json-language-server"
+args = ["--stdio"]
+
+[language-server.vscode-json-language-server.config]
+provideFormatter = true
+
+# -----------------------------------------------------------------------------
+# HTML Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "html"
+language-servers = ["vscode-html-language-server"]
+formatter = { command = "prettier", args = ["--parser", "html"] }
+auto-format = true
+
+[language-server.vscode-html-language-server]
+command = "vscode-html-language-server"
+args = ["--stdio"]
+
+[language-server.vscode-html-language-server.config]
+provideFormatter = true
+
+# -----------------------------------------------------------------------------
+# CSS Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "css"
+language-servers = ["vscode-css-language-server"]
+formatter = { command = "prettier", args = ["--parser", "css"] }
+auto-format = true
+
+[[language]]
+name = "scss"
+language-servers = ["vscode-css-language-server"]
+formatter = { command = "prettier", args = ["--parser", "scss"] }
+auto-format = true
+
+[language-server.vscode-css-language-server]
+command = "vscode-css-language-server"
+args = ["--stdio"]
+
+[language-server.vscode-css-language-server.config]
+provideFormatter = true
+
+# -----------------------------------------------------------------------------
+# Markdown Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "markdown"
+language-servers = ["marksman"]
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+auto-format = true
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]

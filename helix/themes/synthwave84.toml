@@ -1,0 +1,289 @@
+# Synthwave84 Helix Theme 
+# Copyright: "Gokay BURUC"
+# Theme Creator :https://github.com/gokayburuc
+# Created : 2025-11-06
+
+
+# Attribute Highight 
+'attribute' = { fg = 'yellow' }
+
+# Constructor Highlight
+'constructor' = { fg = 'pink', modifiers = ['italic'] }
+
+# Constant Highlight
+'constant' = { fg = 'red', modifiers = ['italic'] }
+# 'constant.builtin' = { fg = 'pink' }
+# 'constant.builtin.boolean' = { fg = 'yellow' }
+'constant.character' = {fg = 'yellow100'}
+# 'constant.character.escape' = {}
+# 'constant.numeric' = { fg = 'orange' }
+# 'constant.numeric.float' = {}
+# 'constant.numeric.integer' = {}
+
+# String Highlights
+'string' = { fg = 'orange', modifiers = ['italic'] }
+# 'string.regexp' = {}
+# 'string.special' = {}
+# 'string.special.path' = {}
+# 'string.special.url' = {}
+# 'string.special.symbol' = {}
+
+# Comment Highlights
+# 'comment.block.documentation' = { fg = 'green', modifiers = ['italic'] }
+# 'comment.block' = { fg = 'green', modifiers = ['italic'] }
+'comment' = { fg = 'gray100', modifiers = ['italic'] }
+# 'comment.line' = {}
+# 'comment.line.documentation' = {}
+# 'comment.unused' = {}
+
+# Variable Highlights
+'variable' = { fg = 'cyan300', modifiers = ['italic', 'bold'] }
+# 'variable.builtin' = { fg = 'yellow' }
+# 'variable.parameter' = { fg = 'white' }
+# 'variable.other' = { fg = 'cyan' }
+'variable.other.member' = { fg = 'green100', modifiers = ['italic','bold'] }
+'variable.other.member.private' = { fg = 'green300', modifiers = ['italic','bold']}
+
+# Label Highlights
+'label' = { fg = 'yellow', modifiers = [ 'italic'] }
+
+# Punctuation Highlights
+'punctuation' = { fg = 'green', modifiers = ['bold'] }
+'punctuation.bracket' = { fg = 'yellow', modifiers=['bold']}
+'punctuation.delimiter' = { fg = 'white', modifiers = ['bold'] }
+'punctuation.special' = { fg = 'white' }
+
+# Keyword Highlights
+'keyword' = { fg = 'yellow', modifiers = ['bold', 'italic'] }
+'keyword.control' = {fg = 'yellow', modifiers = ['bold']}
+# 'keyword.control.conditional' = {}
+# 'keyword.control.repeat' = {}
+'keyword.control.import' = { fg = 'yellow', modifiers = ['italic']}
+# 'keyword.control.return' = {}
+# 'keyword.control.exception' = {}
+
+# Operator Highlights
+'operator' = { fg = 'yellow300', modifiers = ['bold'] }
+
+# Directive Highlights (and,or,not)
+'directive' = { fg = 'yellow500' }
+
+# Special Highlights 
+'special' = { fg = 'yellow' }
+
+# Namespace Highlights
+'namespace' = { fg = 'yellow500', modifiers = ['italic'] }
+
+# Function Highlights 
+'function' = { fg = 'cyan', modifiers = ['bold', 'italic'] }
+'function.builtin' = { fg = 'cyan', modifiers = ['bold','italic'] }
+'function.method' = { fg = 'cyan100' , modifiers= ['italic']}
+'function.method.private' = { fg = 'cyan300' }
+'function.macro' = {fg = 'cyan300'}
+'function.special' = {fg = 'cyan300'}
+
+# Tag Highlights 
+'tag' = { fg = 'green300', modifiers = ['italic','bold'] }
+
+# Type Highlights 
+'type' = { fg = 'yellow300', modifiers = ['italic']}
+# 'type.bultin' = { fg = '' }
+# 'type.parameter' = { fg = '' }
+# 'type.enum' = { fg = '' }
+# 'type.enum.variant' = { fg = '' }
+
+# Markup Highlights 
+'markup.bold' = { fg = 'cyan100', modifiers = ['bold'] }
+'markup.italic' = { fg = 'green300', modifiers = ['italic'] }
+# 'markup.strikethrough' = { modifiers = ['crossed_out'] }
+'markup.heading' = { fg = 'pink', modifiers = ['bold'] }
+# 'markup.heading.marker' = { fg = 'red' }
+# 'markup.heading.1' = { fg = 'red' }
+# 'markup.heading.2' = { fg = 'red' }
+# 'markup.heading.3' = { fg = 'red' }
+# 'markup.heading.4' = { fg = 'red' }
+# 'markup.heading.5' = { fg = 'red' }
+# 'markup.heading.6' = { fg = 'red' }
+# 'markup.link' = { fg = 'pink700' }
+'markup.link.url' = { fg = 'yellow100' }
+'markup.link.text' = { fg = 'green100' }
+'markup.link.label' = { fg = 'yellow100' }
+'markup.list' = { fg = 'pink700', modifiers = ['bold'] }
+# 'markup.list.unnumbered' = { fg = 'red' }
+# 'markup.list.numbered' = { fg = 'red' }
+# 'markup.list.checked' = { fg = 'red' }
+# 'markup.list.unchecked' = { fg = 'red' }
+'markup.quote' = { fg = 'cyan500', bg = 'base01', modifiers = ['italic'] }
+'markup.raw' = { fg = 'green100'}
+# 'markup.raw.block' = { fg = 'green', bg = 'base00' }
+# 'markup.raw.inline' = { fg = 'green', bg = 'base00' }
+
+# Diff Highlights
+# 'diff.delta.conflict' = { fg = 'pink' }
+'diff.delta' = { fg = 'pink' }
+# 'diff.delta.gutter' = { fg = 'white' }
+# 'diff.delta.moved' = { fg = 'cyan' }
+'diff.minus' = { fg = 'pink' }
+# 'diff.minus.gutter' = { fg = 'red' }
+'diff.plus' = { fg = 'cyan' }
+# 'diff.plus.gutter' = { fg = 'green' }
+
+
+# ========================== INTERFACE ========================= 
+
+# Interface Configs
+# Markup Interface
+# 'markup' = {}
+# 'markup.normal' = {}
+# 'markup.completion' = {}
+# 'markup.hover' = {}
+# 'markup.heading.completion' = {}
+# 'markup.heading.hover' = {}
+# 'markup.raw.inline.completion' = {}
+# 'markup.raw.inline.hover'= {}
+
+# User Interface (UI) Configs 
+'ui.background' = { bg = 'base00' }
+'ui.bufferline' = { fg = 'cyan300', bg = 'base01' }
+'ui.bufferline.active' = { fg = 'pink700', bg = 'base01' }
+# 'ui.bufferline.background' = { bg = 'base01' }
+'ui.cursor' = { bg = 'pink', fg = 'base00' }
+# 'ui.cursor.insert' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.match' = { fg = 'red', modifiers = ['bold'] }
+# 'ui.cursor.normal' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.primary' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.primary.insert' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.primary.normal' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.primary.select' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursor.select' = { bg = 'orange', fg = 'bg-alt' }
+# 'ui.cursorcolumn.primary' = {}
+# 'ui.cursorcolumn.secondary' = {}
+# 'ui.cursorline' = { bg = 'bg-alt' }
+# 'ui.cursorline.primary' = { bg = 'bg-alt' }
+# 'ui.cursorline.secondary' = { bg = 'bg-alt' }
+# 'ui.debug.active' = {}
+# 'ui.debug.breakpoint' = {}
+# 'ui.gutter' = { fg = 'white' }
+# 'ui.gutter.selected' = {}
+'ui.help' = { fg = 'fg', bg = 'base02' }
+'ui.highlight' = { fg = 'fg', bg = 'base01' }
+'ui.highlight.frameline' = { fg = 'fg', bg = 'base02' }
+'ui.linenr' = { fg = 'cyan300', bg = 'base00' }
+'ui.linenr.selected' = { fg = 'pink300', bg = 'base00', modifiers = ['bold'] }
+'ui.menu' = { fg = 'fg', bg = 'bg-alt' }
+'ui.menu.scroll' = { fg = 'base02' }
+'ui.menu.selected' = { bg = 'base03', fg = 'fg' }
+# 'ui.picker.header' = {}
+# 'ui.picker.header.column' = {}
+# 'ui.picker.header.column.active' = {}
+'ui.popup' = { bg = 'base01', fg = 'cyan300' }
+# 'ui.popup.info' = { bg = 'bg-alt' }
+'ui.selection' = { bg = 'base04' }
+# 'ui.selection.primary' = { bg = 'base02' }
+'ui.statusline' = { fg = 'cyan700', bg = 'base01' }
+# 'ui.statusline.inactive' = { bg = 'base03' }
+# 'ui.statusline.insert' = { bg = 'base03' }
+# 'ui.statusline.normal' = { bg = 'base03' }
+# 'ui.statusline.select' = { bg = 'base03' }
+# 'ui.statusline.seperator' = { bg = 'base03' }
+'ui.text' = { fg = 'fg' }
+# 'ui.text.directory' = { fg = 'fg' }
+# 'ui.text.focus' = { bg = 'bg-alt', fg = 'fg' }
+# 'ui.text.inactive' = { fg = 'fg' }
+# 'ui.text.info' = { fg = 'fg' }
+# 'ui.virtual.indent-guide' = { fg = 'base02' }
+# 'ui.virtual.inlay-hint' = { fg = 'base02' }
+# 'ui.virtual.inlay-hint.parameter' = { fg = 'base02' }
+# 'ui.virtual.inlay-hint.type' = { fg = 'base02' }
+# 'ui.virtual.jump-label' = { fg = 'base02' }
+'ui.virtual.ruler' = { bg = 'base01' }
+# 'ui.virtual.whitespace' = { fg = 'base02' }
+# 'ui.virtual.wrap' = { fg = 'base02' }
+'ui.window' = { fg = 'gray' }
+
+'error' = { fg = 'red', modifiers = ['bold'] }
+'hint' = { fg = 'cyan', modifiers = ['bold'] }
+'info' = { fg = 'white', modifiers = ['bold'] }
+'warning' = { fg = 'orange', modifiers = ['bold']}
+
+# 'diagnostic' = {}
+"diagnostic.deprecated" = { modifiers = ["crossed_out"] }
+'diagnostic.error' = { underline = { color = 'red', style = "curl" } }
+'diagnostic.hint' = { underline = { color = 'red', style = "curl" } }
+'diagnostic.info' = { underline = { color = 'cyan', style = "curl" } }
+"diagnostic.unnecessary" = { modifiers = ["dim"] }
+'diagnostic.warning' = { underline = { color = 'yellow', style = "curl" } }
+# 'tabstop' = {}
+
+
+
+
+[palette]
+# black = ''
+# black100 = ''
+# black300 = ''
+# black500 = ''
+# black700 = ''
+# blue = ''
+# blue100 = ''
+# blue300 = ''
+# blue500 = ''
+# blue700 = ''
+cyan = '#41C1F1'
+cyan100 = '#5DADD1'
+cyan300 = '#6596AF'
+cyan500 = '#617B8A'
+cyan700 = '#4E575D'
+gray = '#818BB4'
+gray100 = '#7A819F'
+gray300 = '#6F7488'
+gray500 = '#60626D'
+gray700 = '#47484C'
+green = '#72EBAA'
+green100 = '#78CD9D'
+green300 = '#76AD8D'
+green500 = '#6B8A77'
+green700 = '#535E57'
+# magenta = ''
+# magenta100 = ''
+# magenta300 = ''
+# magenta500 = ''
+# magenta700 = ''
+orange = '#FF8B38'
+# orange100 = ''
+# orange300 = ''
+# orange500 = ''
+# orange700 = ''
+# orange900 = ''
+red = '#E43F4B'
+red100 = '#C6585E'
+red300 = '#A56063'
+red500 = '#825C5D'
+red700 = '#584A4A'
+white = '#EFEFF5'
+# white100 = ''
+# white300 = ''
+# white500 = ''
+# white700 = ''
+yellow = '#FED251'
+yellow100 = '#E3BD56'
+yellow300 = '#BDA366'
+yellow500 = '#958565'
+yellow700 = '#645E53'
+pink ='#F37ECC'
+pink100 = '#DC73B9'
+pink300 = '#B975A1'
+pink500 = '#926D84'
+pink700 = '#64565E'
+fg = '#EFEFF5'
+fg-alt = '#ABB2C2'
+bg = '#241B2F'
+bg-alt = '#262335'
+base00 = '#241b2f'
+base01 = '#201A28'
+base02 = '#1B1721'
+base03 = '#151318'
+base04 = '#0D0C0E'
+
+# TODO: fg-alt white color variation
+# TODO: Orange variations 

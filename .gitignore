@@ -1,0 +1,29 @@
+# ============================================================================
+# .gitignore para dotfiles
+# ============================================================================
+
+# Helix - NO sincronizar runtime (se genera automáticamente)
+helix/runtime/
+
+# Neovim - NO sincronizar archivos generados
+nvim/lazy-lock.json
+nvim/.luarc.json
+nvim/.stylua.toml
+
+# Backup files
+*.backup
+*.backup.*
+*~
+.*.swp
+.*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

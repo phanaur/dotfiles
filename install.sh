@@ -1,0 +1,197 @@
+#!/bin/bash
+# ============================================================================
+# Dotfiles Installation Script
+# Installs and links all configurations
+# ============================================================================
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "==================================================================="
+echo "Dotfiles Installation"
+echo "==================================================================="
+echo ""
+
+# ============================================================================
+# 1. Install System Dependencies
+# ============================================================================
+
+log_info "Checking if setup-dev-env.sh should run..."
+
+if [ -f "$DOTFILES_DIR/scripts/setup-dev-env.sh" ]; then
+    read -p "Run full system setup (installs Neovim, Helix, language servers, etc.)? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log_info "Running setup-dev-env.sh..."
+        bash "$DOTFILES_DIR/scripts/setup-dev-env.sh"
+    else
+        log_warning "Skipping system setup. Make sure dependencies are installed manually."
+    fi
+else
+    log_warning "setup-dev-env.sh not found. Skipping system setup."
+fi
+
+# ============================================================================
+# 2. Backup Existing Configurations
+# ============================================================================
+
+log_info "Backing up existing configurations..."
+
+backup_dir="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$backup_dir"
+
+if [ -d "$HOME/.config/nvim" ] || [ -L "$HOME/.config/nvim" ]; then
+    mv "$HOME/.config/nvim" "$backup_dir/nvim"
+    log_success "Backed up existing Neovim config to $backup_dir/nvim"
+fi
+
+if [ -d "$HOME/.config/helix" ] || [ -L "$HOME/.config/helix" ]; then
+    mv "$HOME/.config/helix" "$backup_dir/helix"
+    log_success "Backed up existing Helix config to $backup_dir/helix"
+fi
+
+# ============================================================================
+# 3. Create Symbolic Links
+# ============================================================================
+
+log_info "Creating symbolic links..."
+
+mkdir -p "$HOME/.config"
+
+# Neovim
+if [ -d "$DOTFILES_DIR/nvim" ]; then
+    ln -sf "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
+    log_success "Linked Neovim config"
+else
+    log_warning "Neovim config directory not found in dotfiles"
+fi
+
+# Helix
+if [ -d "$DOTFILES_DIR/helix" ]; then
+    ln -sf "$DOTFILES_DIR/helix" "$HOME/.config/helix"
+    log_success "Linked Helix config"
+else
+    log_warning "Helix config directory not found in dotfiles"
+fi
+
+# ============================================================================
+# 4. Install Helix Grammars
+# ============================================================================
+
+log_info "Installing Helix tree-sitter grammars..."
+
+if command -v hx &> /dev/null; then
+    log_info "Fetching grammars (this may take a few minutes)..."
+    hx --grammar fetch
+
+    log_info "Building grammars (this may take several minutes)..."
+    hx --grammar build
+
+    log_success "Helix grammars installed"
+else
+    log_warning "Helix not found. Install it first or run setup-dev-env.sh"
+fi
+
+# ============================================================================
+# 5. Setup Neovim Plugins
+# ============================================================================
+
+log_info "Setting up Neovim plugins..."
+
+if command -v nvim &> /dev/null; then
+    log_info "Syncing Neovim plugins (this may take a few minutes)..."
+    log_info "Neovim will open and sync plugins. Close it when done."
+
+    read -p "Press Enter to open Neovim and sync plugins..."
+    nvim
+
+    log_success "Neovim plugins synced"
+else
+    log_warning "Neovim not found. Install it first or run setup-dev-env.sh"
+fi
+
+# ============================================================================
+# 6. Copy Templates
+# ============================================================================
+
+log_info "Setting up templates..."
+
+if [ -d "$DOTFILES_DIR/templates" ]; then
+    # Copy to home directory for easy access
+    cp "$DOTFILES_DIR/templates/.editorconfig.csharp" "$HOME/.editorconfig.csharp-template" 2>/dev/null && \
+        log_success "Copied .editorconfig template to home directory" || \
+        log_warning "Could not copy .editorconfig template"
+
+    cp "$DOTFILES_DIR/templates/omnisharp.json" "$HOME/omnisharp.json.template" 2>/dev/null && \
+        log_success "Copied omnisharp.json template to home directory" || \
+        log_warning "Could not copy omnisharp.json template"
+fi
+
+# ============================================================================
+# 7. Verification
+# ============================================================================
+
+echo ""
+echo "==================================================================="
+echo "Installation Complete!"
+echo "==================================================================="
+echo ""
+
+log_success "Configuration installed successfully!"
+echo ""
+echo "Installed:"
+if [ -L "$HOME/.config/nvim" ]; then
+    echo "  ✓ Neovim config: ~/.config/nvim -> $DOTFILES_DIR/nvim"
+else
+    echo "  ✗ Neovim config not linked"
+fi
+
+if [ -L "$HOME/.config/helix" ]; then
+    echo "  ✓ Helix config: ~/.config/helix -> $DOTFILES_DIR/helix"
+else
+    echo "  ✗ Helix config not linked"
+fi
+
+echo ""
+echo "Backups (if any): $backup_dir"
+echo ""
+echo "Next steps:"
+echo "  1. Restart your terminal"
+echo "  2. Open Neovim: nvim"
+echo "     - Check :Mason for installed tools"
+echo "     - Check :checkhealth for any issues"
+echo "  3. Open Helix: hx"
+echo "     - Grammars should be installed"
+echo "  4. For C# projects, copy templates:"
+echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
+echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
+echo ""
+echo "Documentation available in: $DOTFILES_DIR/docs/"
+echo ""
+
+# Check for common issues
+echo "Checking configuration..."
+if [ ! -L "$HOME/.local/bin/omnisharp" ]; then
+    log_warning "OmniSharp symlink not found. Run :Mason in Neovim to install it."
+fi
+
+if [ ! -d "$HOME/.config/helix/runtime/grammars" ]; then
+    log_warning "Helix grammars not found. Run: hx --grammar fetch && hx --grammar build"
+fi
+
+echo ""
+log_success "Installation complete! Happy coding!"
+echo ""

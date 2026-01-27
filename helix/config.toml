@@ -1,0 +1,15 @@
+theme = "synthwave84"
+
+[editor]
+line-number = "relative"
+indent-guides.render = true
+auto-save = true
+idle-timeout = 1000  # Auto-guarda después de 1 segundo sin escribir (en milisegundos)
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.inline-diagnostics]
+cursor-line = "hint"
+other-lines = "error"
