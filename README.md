@@ -1,6 +1,6 @@
 # Dotfiles - Configuración de Desarrollo
 
-Configuración completa de Neovim (LazyVim) y Helix para desarrollo en C#, Rust, Python, TypeScript y más.
+Configuración completa de Neovim (LazyVim) y Helix para desarrollo en C#, Go, Rust, Python, TypeScript y más.
 
 ## 🐧 Distribuciones Soportadas
 
@@ -28,6 +28,7 @@ dotfiles/
 │   │   └── plugins/
 │   │       ├── languages.lua      ← SINCRONIZAR
 │   │       ├── csharp-roslyn.lua  ← SINCRONIZAR
+│   │       ├── go.lua              ← SINCRONIZAR
 │   │       ├── autosave.lua       ← SINCRONIZAR
 │   │       ├── diagnostics.lua    ← SINCRONIZAR
 │   │       └── notifications.lua  ← SINCRONIZAR

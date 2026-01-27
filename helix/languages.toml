@@ -216,3 +216,33 @@ auto-format = true
 [language-server.marksman]
 command = "marksman"
 args = ["server"]
+
+# -----------------------------------------------------------------------------
+# Go Configuration
+# -----------------------------------------------------------------------------
+[[language]]
+name = "go"
+language-servers = ["gopls"]
+formatter = { command = "gofmt" }
+auto-format = true
+roots = ["go.mod", "go.work"]
+
+[language-server.gopls]
+command = "gopls"
+
+[language-server.gopls.config]
+gofumpt = true
+staticcheck = true
+
+[language-server.gopls.config.analyses]
+unusedparams = true
+shadow = true
+
+[language-server.gopls.config.hints]
+assignVariableTypes = true
+compositeLiteralFields = true
+compositeLiteralTypes = true
+constantValues = true
+functionTypeParameters = true
+parameterNames = true
+rangeVariableTypes = true
