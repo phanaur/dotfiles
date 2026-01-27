@@ -84,6 +84,14 @@ sudo dnf install -y nodejs npm
 log_info "Installing Python..."
 sudo dnf install -y python3 python3-pip
 
+# Install Go
+log_info "Installing Go..."
+if ! command -v go &> /dev/null; then
+    sudo dnf install -y golang
+else
+    log_success "Go already installed: $(go version)"
+fi
+
 # Install build tools
 log_info "Installing build tools..."
 sudo dnf install -y gcc gcc-c++ clang clang-tools-extra make cmake
