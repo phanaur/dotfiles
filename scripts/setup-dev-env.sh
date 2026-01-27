@@ -129,6 +129,35 @@ if ! command -v taplo &> /dev/null; then
     cargo install taplo-cli --locked
 fi
 
+# Go tools (gopls, gofmt, goimports)
+log_info "Installing Go language server and tools..."
+if command -v go &> /dev/null; then
+    # Configure Go environment
+    export GOPATH="$HOME/go"
+    export PATH="$PATH:$GOPATH/bin"
+    
+    log_info "Installing gopls (Go language server)..."
+    go install golang.org/x/tools/gopls@latest
+    
+    log_info "Installing goimports (auto-imports organizer)..."
+    go install golang.org/x/tools/cmd/goimports@latest
+    
+    log_info "Installing delve (Go debugger)..."
+    go install github.com/go-delve/delve/cmd/dlv@latest
+    
+    # Add Go binaries to PATH permanently
+    if ! grep -q 'export PATH="$PATH:$HOME/go/bin"' "$HOME/.bashrc"; then
+        echo '' >> "$HOME/.bashrc"
+        echo '# Go binaries' >> "$HOME/.bashrc"
+        echo 'export PATH="$PATH:$HOME/go/bin"' >> "$HOME/.bashrc"
+        log_success "Added Go binaries to PATH in .bashrc"
+    fi
+    
+    log_success "Go tools installed (gopls, goimports, delve)"
+else
+    log_warning "Go not found. Skipping Go tools installation."
+fi
+
 # ============================================================================
 # 3. LazyVim Configuration
 # ============================================================================
@@ -642,6 +671,20 @@ else
     log_error "Python not found"
 fi
 
+# Check Go
+if command -v go &> /dev/null; then
+    log_success "Go: $(go version | awk '{print $3, $4}')"
+    
+    # Check gopls
+    if command -v gopls &> /dev/null; then
+        log_success "gopls: $(gopls version | head -1)"
+    else
+        log_warning "gopls not found (Go language server)"
+    fi
+else
+    log_error "Go not found"
+fi
+
 # Check OmniSharp symlink
 if [ -L ~/.local/bin/omnisharp ]; then
     log_success "OmniSharp: symlink created for Helix"
@@ -658,13 +701,14 @@ echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
 echo "  ✓ Roslyn LSP for C# (Neovim)"
 echo "  ✓ OmniSharp LSP for C# (Helix)"
+echo "  ✓ gopls for Go (both editors)"
 echo "  ✓ Auto-save enabled (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
 echo "  ✓ Configuration templates created"
 echo ""
 echo "Next steps:"
-echo "  1. Restart your terminal"
+echo "  1. Restart your terminal (to load Go binaries in PATH)"
 echo "  2. Open Neovim: nvim"
 echo "  3. Wait for plugins to sync"
 echo "  4. For C# projects, copy templates:"

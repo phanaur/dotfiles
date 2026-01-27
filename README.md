@@ -115,6 +115,7 @@ nvim
 - [ ] **Neovim**: Abrir `nvim` y esperar a que Lazy sincronice
 - [ ] **Mason**: Verificar herramientas con `:Mason`
 - [ ] **OmniSharp**: Verificar symlink con `ls -la ~/.local/bin/omnisharp`
+- [ ] **Go**: Verificar gopls con `gopls version`
 - [ ] **Claude Code**: Autenticar con `claude login`
 - [ ] **Neovim AI**: Verificar con `:ClaudeHelp`
 - [ ] **Proyectos C#**: Copiar templates (`.editorconfig`, `omnisharp.json`)
@@ -124,9 +125,11 @@ nvim
 ### Neovim (LazyVim):
 - ✅ **Auto-save** (1 segundo)
 - ✅ **Roslyn LSP** para C# 12+
+- ✅ **gopls** para Go con inlay hints completos
+- ✅ **go.nvim** plugin con herramientas integradas
 - ✅ **Diagnósticos automáticos** (ventanas flotantes al 0.5s)
 - ✅ **Notificaciones largas** (5 segundos + historial)
-- ✅ **Soporte multi-lenguaje** (11 lenguajes)
+- ✅ **Soporte multi-lenguaje** (12 lenguajes)
 - ✅ **Trouble.nvim** para ver todos los errores
 - ✅ **Claude Code CLI** integrado
 
@@ -139,13 +142,15 @@ nvim
 ### Helix:
 - ✅ **Auto-save** (1 segundo)
 - ✅ **OmniSharp LSP** para C# 12+
+- ✅ **gopls** para Go con análisis estático
 - ✅ **Tema personalizado** (synthwave84)
 - ✅ **Inlay hints** activados
 - ✅ **Diagnósticos inline**
 
 ### Compartido:
-- ✅ **Mismas convenciones de C#** (.editorconfig)
+- ✅ **Convenciones C# con naming rules** (.editorconfig)
 - ✅ **OmniSharp compartido** (via Mason)
+- ✅ **Go tools** instalados automáticamente (gopls, goimports, delve)
 - ✅ **Todas las herramientas** instaladas
 
 ## 🌐 Sincronización
