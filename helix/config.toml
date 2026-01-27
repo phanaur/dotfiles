@@ -6,6 +6,11 @@ indent-guides.render = true
 auto-save = true
 idle-timeout = 1000  # Auto-guarda después de 1 segundo sin escribir (en milisegundos)
 
+[editor.cursor-shape]
+insert = "bar"           # Línea vertical en modo insert
+normal = "block"         # Bloque en modo normal
+select = "underline"     # Subrayado en modo select
+
 [editor.lsp]
 display-messages = true
 display-inlay-hints = true
