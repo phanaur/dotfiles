@@ -1,7 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Setup Development Environment (Multi-Distribution)
-# Supports: Ubuntu, Debian, Fedora, Arch Linux, openSUSE
+# Setup Development Environment for Fedora 43
 # Configures LazyVim + Helix with all language servers and modern features
 # ============================================================================
 
@@ -31,138 +30,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# ============================================================================
-# Distribution Detection
-# ============================================================================
+# Check if running on Fedora
+if [ ! -f /etc/fedora-release ]; then
+    log_error "This script is designed for Fedora. Exiting."
+    exit 1
+fi
 
-detect_distro() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        DISTRO_ID="$ID"
-        DISTRO_NAME="$NAME"
-        DISTRO_VERSION="$VERSION_ID"
-    else
-        log_error "Cannot detect distribution. /etc/os-release not found."
-        exit 1
-    fi
-
-    case "$DISTRO_ID" in
-        fedora)
-            PKG_MANAGER="dnf"
-            PKG_UPDATE="sudo dnf update -y"
-            PKG_INSTALL="sudo dnf install -y"
-            ;;
-        ubuntu|debian|linuxmint|pop)
-            PKG_MANAGER="apt"
-            PKG_UPDATE="sudo apt update && sudo apt upgrade -y"
-            PKG_INSTALL="sudo apt install -y"
-            ;;
-        arch|manjaro|endeavouros)
-            PKG_MANAGER="pacman"
-            PKG_UPDATE="sudo pacman -Syu --noconfirm"
-            PKG_INSTALL="sudo pacman -S --noconfirm --needed"
-            ;;
-        opensuse*|sles)
-            PKG_MANAGER="zypper"
-            PKG_UPDATE="sudo zypper refresh && sudo zypper update -y"
-            PKG_INSTALL="sudo zypper install -y"
-            ;;
-        *)
-            log_error "Unsupported distribution: $DISTRO_ID"
-            log_error "Supported: Ubuntu, Debian, Fedora, Arch Linux, openSUSE"
-            exit 1
-            ;;
-    esac
-
-    log_info "Detected: $DISTRO_NAME ($DISTRO_ID)"
-    log_info "Package manager: $PKG_MANAGER"
-}
-
-# ============================================================================
-# Package Name Mapping
-# ============================================================================
-
-# Get package name based on distribution
-get_package_name() {
-    local pkg_id="$1"
-
-    case "$pkg_id" in
-        neovim)
-            case "$PKG_MANAGER" in
-                apt) echo "neovim" ;;
-                dnf) echo "neovim" ;;
-                pacman) echo "neovim" ;;
-                zypper) echo "neovim" ;;
-            esac
-            ;;
-        helix)
-            case "$PKG_MANAGER" in
-                apt) echo "helix" ;;
-                dnf) echo "helix" ;;
-                pacman) echo "helix" ;;
-                zypper) echo "helix" ;;
-            esac
-            ;;
-        dotnet-sdk)
-            case "$PKG_MANAGER" in
-                apt) echo "dotnet-sdk-8.0" ;;
-                dnf) echo "dotnet-sdk-10.0" ;;
-                pacman) echo "dotnet-sdk" ;;
-                zypper) echo "dotnet-sdk-8.0" ;;
-            esac
-            ;;
-        nodejs)
-            case "$PKG_MANAGER" in
-                apt) echo "nodejs npm" ;;
-                dnf) echo "nodejs npm" ;;
-                pacman) echo "nodejs npm" ;;
-                zypper) echo "nodejs npm" ;;
-            esac
-            ;;
-        python)
-            case "$PKG_MANAGER" in
-                apt) echo "python3 python3-pip" ;;
-                dnf) echo "python3 python3-pip" ;;
-                pacman) echo "python python-pip" ;;
-                zypper) echo "python3 python3-pip" ;;
-            esac
-            ;;
-        build-tools)
-            case "$PKG_MANAGER" in
-                apt) echo "build-essential gcc g++ clang clang-tools cmake" ;;
-                dnf) echo "gcc gcc-c++ clang clang-tools-extra make cmake" ;;
-                pacman) echo "base-devel clang cmake" ;;
-                zypper) echo "gcc gcc-c++ clang cmake make" ;;
-            esac
-            ;;
-        tools)
-            case "$PKG_MANAGER" in
-                apt) echo "git curl wget unzip ripgrep fd-find" ;;
-                dnf) echo "git curl wget unzip ripgrep fd-find" ;;
-                pacman) echo "git curl wget unzip ripgrep fd" ;;
-                zypper) echo "git curl wget unzip ripgrep fd" ;;
-            esac
-            ;;
-    esac
-}
-
-# Install package with distribution-specific handling
-install_package() {
-    local pkg_id="$1"
-    local packages=$(get_package_name "$pkg_id")
-
-    if [ -n "$packages" ]; then
-        log_info "Installing $pkg_id..."
-        $PKG_INSTALL $packages
-    else
-        log_warning "Package $pkg_id not available for $PKG_MANAGER"
-    fi
-}
-
-# Detect distribution
-detect_distro
-
-log_info "Starting development environment setup for $DISTRO_NAME..."
+log_info "Starting development environment setup for Fedora 43..."
 
 # ============================================================================
 # 1. System Package Installation
@@ -171,43 +45,20 @@ log_info "Starting development environment setup for $DISTRO_NAME..."
 log_info "Installing system packages..."
 
 # Update system
-log_info "Updating system packages..."
-eval "$PKG_UPDATE"
+sudo dnf update -y
 
-# Install Neovim
-install_package "neovim"
+# Install Neovim (latest stable)
+log_info "Installing Neovim..."
+sudo dnf install -y neovim
 
-# Install Helix (may require special handling on some distros)
+# Install Helix
 log_info "Installing Helix..."
-if [ "$PKG_MANAGER" = "apt" ]; then
-    # Helix not in Ubuntu/Debian repos, use snap or manual install
-    if command -v snap &> /dev/null; then
-        log_info "Installing Helix via snap..."
-        sudo snap install helix --classic
-    else
-        log_warning "Helix not available in apt. Install manually from: https://helix-editor.com/"
-    fi
-else
-    install_package "helix"
-fi
+sudo dnf install -y helix
 
-# Install .NET SDK
-log_info "Installing .NET SDK..."
+# Install .NET SDK 10
+log_info "Installing .NET SDK 10..."
 if ! command -v dotnet &> /dev/null; then
-    # .NET SDK requires special setup on some distros
-    case "$PKG_MANAGER" in
-        apt)
-            # Add Microsoft repository for Ubuntu/Debian
-            wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
-            sudo dpkg -i /tmp/packages-microsoft-prod.deb
-            rm /tmp/packages-microsoft-prod.deb
-            sudo apt update
-            install_package "dotnet-sdk"
-            ;;
-        *)
-            install_package "dotnet-sdk"
-            ;;
-    esac
+    sudo dnf install -y dotnet-sdk-10.0
 else
     log_success ".NET SDK already installed: $(dotnet --version)"
 fi
@@ -217,7 +68,6 @@ log_info "Installing Rust toolchain..."
 if ! command -v rustc &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source "$HOME/.cargo/env"
-    log_success "Rust installed"
 else
     log_success "Rust already installed: $(rustc --version)"
 fi
@@ -227,16 +77,20 @@ log_info "Installing Rust tools (rustfmt, clippy)..."
 rustup component add rustfmt clippy
 
 # Install Node.js and npm
-install_package "nodejs"
+log_info "Installing Node.js and npm..."
+sudo dnf install -y nodejs npm
 
 # Install Python and pip
-install_package "python"
+log_info "Installing Python..."
+sudo dnf install -y python3 python3-pip
 
 # Install build tools
-install_package "build-tools"
+log_info "Installing build tools..."
+sudo dnf install -y gcc gcc-c++ clang clang-tools-extra make cmake
 
 # Install additional tools
-install_package "tools"
+log_info "Installing additional tools..."
+sudo dnf install -y git curl wget unzip ripgrep fd-find
 
 # ============================================================================
 # 2. Language Servers and Formatters Installation
@@ -273,16 +127,6 @@ fi
 log_info "Installing TOML language server (taplo)..."
 if ! command -v taplo &> /dev/null; then
     cargo install taplo-cli --locked
-fi
-
-# Claude Code CLI (AI Assistant)
-log_info "Installing Claude Code CLI..."
-if ! command -v claude &> /dev/null; then
-    sudo npm install -g @anthropic-ai/claude-code
-    log_success "Claude Code CLI installed"
-    log_warning "Run 'claude login' to authenticate"
-else
-    log_success "Claude Code already installed: $(claude --version)"
 fi
 
 # ============================================================================
@@ -805,20 +649,10 @@ else
     log_warning "OmniSharp: symlink not found (may need manual installation)"
 fi
 
-# Check Claude Code CLI
-if command -v claude &> /dev/null; then
-    log_success "Claude Code CLI: $(claude --version)"
-else
-    log_warning "Claude Code CLI: not found"
-fi
-
 echo "==================================================================="
 echo ""
 
 log_success "Development environment setup complete!"
-echo ""
-echo "Distribution: $DISTRO_NAME"
-echo "Package manager: $PKG_MANAGER"
 echo ""
 echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
@@ -827,22 +661,18 @@ echo "  ✓ OmniSharp LSP for C# (Helix)"
 echo "  ✓ Auto-save enabled (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
-echo "  ✓ Claude Code CLI installed"
 echo "  ✓ Configuration templates created"
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal"
-echo "  2. Authenticate Claude Code: claude login"
-echo "  3. Open Neovim: nvim"
-echo "  4. Wait for plugins to sync"
-echo "  5. Test Claude Code: <leader>cc in Neovim"
-echo "  6. For C# projects, copy templates:"
+echo "  2. Open Neovim: nvim"
+echo "  3. Wait for plugins to sync"
+echo "  4. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
 echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
 echo ""
 echo "Documentation:"
 echo "  - Neovim config: ~/.config/nvim/"
 echo "  - Helix config: ~/.config/helix/"
-echo "  - AI Assistants: ~/.config/nvim/AI-ASSISTANTS.md"
 echo "  - Templates: ~/*.template"
 echo ""
