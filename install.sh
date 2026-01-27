@@ -124,7 +124,30 @@ else
 fi
 
 # ============================================================================
-# 6. Copy Templates
+# 6. Install AI Tools (Optional)
+# ============================================================================
+
+log_info "Checking AI tools..."
+
+if ! command -v claude &> /dev/null; then
+    read -p "Install Claude Code CLI for AI assistance in Neovim? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log_info "Installing Claude Code CLI..."
+        if command -v npm &> /dev/null; then
+            npm install -g @anthropic-ai/claude-code
+            log_success "Claude Code CLI installed"
+            log_warning "Remember to run 'claude login' to authenticate"
+        else
+            log_warning "npm not found. Install Node.js first or run setup-dev-env.sh"
+        fi
+    fi
+else
+    log_success "Claude Code CLI already installed: $(claude --version)"
+fi
+
+# ============================================================================
+# 7. Copy Templates
 # ============================================================================
 
 log_info "Setting up templates..."
@@ -141,7 +164,7 @@ if [ -d "$DOTFILES_DIR/templates" ]; then
 fi
 
 # ============================================================================
-# 7. Verification
+# 8. Verification
 # ============================================================================
 
 echo ""
@@ -165,21 +188,37 @@ else
     echo "  ✗ Helix config not linked"
 fi
 
+if command -v claude &> /dev/null; then
+    echo "  ✓ Claude Code CLI: $(claude --version)"
+else
+    echo "  ✗ Claude Code CLI not installed"
+fi
+
 echo ""
 echo "Backups (if any): $backup_dir"
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal"
-echo "  2. Open Neovim: nvim"
+if command -v claude &> /dev/null; then
+    echo "  2. Authenticate Claude Code: claude login"
+    echo "  3. Open Neovim: nvim"
+    echo "     - Test Claude Code: <leader>cc"
+else
+    echo "  2. Open Neovim: nvim"
+fi
 echo "     - Check :Mason for installed tools"
 echo "     - Check :checkhealth for any issues"
-echo "  3. Open Helix: hx"
-echo "     - Grammars should be installed"
-echo "  4. For C# projects, copy templates:"
+if command -v hx &> /dev/null; then
+    echo "  4. Open Helix: hx"
+    echo "     - Grammars should be installed"
+fi
+echo "  5. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
 echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
 echo ""
-echo "Documentation available in: $DOTFILES_DIR/docs/"
+echo "Documentation available in:"
+echo "  - Dotfiles: $DOTFILES_DIR/docs/"
+echo "  - AI Assistants: ~/.config/nvim/AI-ASSISTANTS.md"
 echo ""
 
 # Check for common issues
@@ -190,6 +229,12 @@ fi
 
 if [ ! -d "$HOME/.config/helix/runtime/grammars" ]; then
     log_warning "Helix grammars not found. Run: hx --grammar fetch && hx --grammar build"
+fi
+
+if command -v claude &> /dev/null; then
+    if ! claude --help &> /dev/null; then
+        log_warning "Claude Code CLI may need authentication. Run: claude login"
+    fi
 fi
 
 echo ""

@@ -114,6 +114,16 @@ sudo npm install -g yaml-language-server
 log_info "Installing VSCode language servers..."
 sudo npm install -g vscode-langservers-extracted
 
+# Claude Code CLI (AI Assistant)
+log_info "Installing Claude Code CLI..."
+if ! command -v claude &> /dev/null; then
+    sudo npm install -g @anthropic-ai/claude-code
+    log_success "Claude Code CLI installed"
+    log_warning "Run 'claude login' to authenticate"
+else
+    log_success "Claude Code already installed: $(claude --version)"
+fi
+
 # Markdown tools
 log_info "Installing Markdown tools (marksman)..."
 MARKSMAN_VERSION="2023-12-09"
@@ -649,6 +659,13 @@ else
     log_warning "OmniSharp: symlink not found (may need manual installation)"
 fi
 
+# Check Claude Code CLI
+if command -v claude &> /dev/null; then
+    log_success "Claude Code CLI: $(claude --version)"
+else
+    log_warning "Claude Code CLI: not found"
+fi
+
 echo "==================================================================="
 echo ""
 
@@ -661,18 +678,22 @@ echo "  ✓ OmniSharp LSP for C# (Helix)"
 echo "  ✓ Auto-save enabled (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
+echo "  ✓ Claude Code CLI installed"
 echo "  ✓ Configuration templates created"
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal"
-echo "  2. Open Neovim: nvim"
-echo "  3. Wait for plugins to sync"
-echo "  4. For C# projects, copy templates:"
+echo "  2. Authenticate Claude Code: claude login"
+echo "  3. Open Neovim: nvim"
+echo "  4. Wait for plugins to sync"
+echo "  5. Test Claude Code: <leader>cc in Neovim"
+echo "  6. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
 echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
 echo ""
 echo "Documentation:"
 echo "  - Neovim config: ~/.config/nvim/"
 echo "  - Helix config: ~/.config/helix/"
+echo "  - AI Assistants: ~/.config/nvim/AI-ASSISTANTS.md"
 echo "  - Templates: ~/*.template"
 echo ""

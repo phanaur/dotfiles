@@ -20,9 +20,14 @@ Configuración completa de **Claude Code** y **Google Gemini** integrados en Neo
 
 ### Claude Code CLI
 
+**Instalación automática:**
+Si usaste los scripts de instalación de dotfiles (`setup-dev-env.sh` o `install.sh`), Claude Code CLI ya está instalado.
+
+**Instalación manual (si es necesario):**
+
 **Opción 1: NPM**
 ```bash
-npm install -g claude-cli
+npm install -g @anthropic-ai/claude-code
 ```
 
 **Opción 2: Script oficial**
@@ -30,9 +35,16 @@ npm install -g claude-cli
 curl -fsSL https://claude.ai/install.sh | sh
 ```
 
-**Autenticación:**
+**Autenticación (REQUERIDO):**
 ```bash
+# Esto es lo único que necesitas hacer después de la instalación
 claude login
+```
+
+**Verificación:**
+```bash
+which claude
+claude --version
 ```
 
 ### Google Gemini CLI
@@ -305,40 +317,66 @@ python --version  # Debe ser 3.8+
 - [Gemini API Docs](https://ai.google.dev/docs)
 - [API Keys Gemini](https://makersuite.google.com/app/apikey)
 
-## 🔄 Sincronización
+## 🔄 Sincronización e Instalación
 
-Estos archivos ya están incluidos en tu dotfiles:
+### Instalación automática de Claude Code
+
+Los scripts de instalación de dotfiles ya incluyen Claude Code CLI:
+
+**`setup-dev-env.sh`** (instalación completa):
+- Instala automáticamente Claude Code CLI vía npm
+- Solo necesitas ejecutar `claude login` después
+
+**`install.sh`** (instalación de dotfiles):
+- Pregunta si quieres instalar Claude Code CLI
+- Si aceptas, lo instala automáticamente
+- Solo necesitas ejecutar `claude login` después
+
+### Archivos sincronizados
+
+Estos archivos ya están incluidos en tu dotfiles y se sincronizan automáticamente:
 - `~/.config/nvim/lua/plugins/ai-claude.lua`
 - `~/.config/nvim/lua/plugins/ai-gemini.lua`
 - `~/.config/nvim/AI-ASSISTANTS.md`
-
-Al sincronizar con `~/github/dotfiles/sync-configs.sh`, se copiarán automáticamente.
+- Scripts de instalación (`setup-dev-env.sh`, `install.sh`)
 
 ## ✨ Próximos Pasos
 
-1. **Instalar CLIs:**
-   ```bash
-   npm install -g claude-cli
-   pip install gemini-cli
-   ```
+### Si acabas de instalar dotfiles:
 
-2. **Autenticar:**
+1. **Autenticar Claude Code (ÚNICO PASO NECESARIO):**
    ```bash
    claude login
+   ```
+
+2. **Opcional - Instalar Gemini CLI:**
+   ```bash
+   pip install gemini-cli
    export GOOGLE_API_KEY="tu-key"
    ```
 
 3. **Probar en Neovim:**
    ```vim
    :ClaudeHelp
-   :GeminiHelp
+   :GeminiHelp  # Si instalaste Gemini
    ```
 
 4. **Workflow básico:**
    - `<leader>cc` para Claude
-   - `<leader>gg` para Gemini
+   - `<leader>gg` para Gemini (opcional)
    - ¡Empieza a programar con IA!
+
+### En nuevos dispositivos:
+
+1. Clonar dotfiles: `git clone git@github.com:tu-usuario/dotfiles.git ~/github/dotfiles`
+2. Ejecutar instalación: `bash ~/github/dotfiles/install.sh`
+3. Autenticar: `claude login`
+4. ¡Listo! Claude Code ya funciona en Neovim
 
 ---
 
-**Nota:** Ambos plugins se cargan de forma lazy (solo cuando se usan), así que no afectan el tiempo de inicio de Neovim.
+**Notas:**
+- Claude Code CLI se instala automáticamente con los scripts de dotfiles
+- Solo necesitas autenticarte una vez con `claude login`
+- Ambos plugins se cargan de forma lazy (solo cuando se usan)
+- No afectan el tiempo de inicio de Neovim

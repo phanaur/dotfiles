@@ -103,6 +103,8 @@ nvim
 - [ ] **Neovim**: Abrir `nvim` y esperar a que Lazy sincronice
 - [ ] **Mason**: Verificar herramientas con `:Mason`
 - [ ] **OmniSharp**: Verificar symlink con `ls -la ~/.local/bin/omnisharp`
+- [ ] **Claude Code**: Autenticar con `claude login`
+- [ ] **Neovim AI**: Verificar con `:ClaudeHelp`
 - [ ] **Proyectos C#**: Copiar templates (`.editorconfig`, `omnisharp.json`)
 
 ## 🔧 Configuración Incluida
@@ -114,6 +116,13 @@ nvim
 - ✅ **Notificaciones largas** (5 segundos + historial)
 - ✅ **Soporte multi-lenguaje** (11 lenguajes)
 - ✅ **Trouble.nvim** para ver todos los errores
+- ✅ **Claude Code CLI** integrado
+
+### AI Assistants:
+- ✅ **Claude Code CLI** integrado en Neovim
+- ✅ Keybindings: `<leader>cc`, `<leader>cb`, `<leader>cs`, `<leader>cf`, `<leader>cm`, `<leader>cr`
+- ✅ Diff viewer para revisar cambios
+- ✅ Terminal split integrado
 
 ### Helix:
 - ✅ **Auto-save** (1 segundo)
