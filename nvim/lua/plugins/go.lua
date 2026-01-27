@@ -78,8 +78,6 @@ return {
           enable = true,
           style = "inlay",
         },
-        trouble = true,
-        luasnip = true,
       })
 
       -- Auto commands for Go
