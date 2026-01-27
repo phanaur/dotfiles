@@ -15,11 +15,14 @@
 -- Alternativa: Usa Claude Code que funciona perfectamente
 --
 -- Keybindings (cuando esté habilitado):
---   <leader>gg - Toggle Gemini terminal
---   <leader>ga - Ask Gemini (normal o visual)
---   <leader>gf - Añadir archivo actual al contexto
---   <leader>gh - Health check del plugin
---   <leader>gd - Enviar diagnósticos del buffer actual
+--   <leader>mm - Toggle Gemini terminal
+--   <leader>ma - Ask Gemini (normal o visual)
+--   <leader>mf - Añadir archivo actual al contexto
+--   <leader>mh - Health check del plugin
+--   <leader>md - Enviar diagnósticos del buffer actual
+--   <leader>mx - Fix errores automáticamente
+--
+-- NOTA: Cambiados de <leader>g a <leader>m para evitar conflicto con Git
 --
 -- ============================================================================
 
@@ -31,11 +34,11 @@ return {
   },
   cmd = "Gemini",
   keys = {
-    { "<leader>gg", "<cmd>Gemini toggle<cr>", desc = "Toggle Gemini CLI" },
-    { "<leader>ga", "<cmd>Gemini ask<cr>", desc = "Ask Gemini", mode = { "n", "v" } },
-    { "<leader>gf", "<cmd>Gemini add_file<cr>", desc = "Add File" },
-    { "<leader>gh", "<cmd>Gemini health<cr>", desc = "Health Check" },
-    { "<leader>gd", "<cmd>Gemini add_diagnostics<cr>", desc = "Add Diagnostics" },
+    { "<leader>mm", "<cmd>Gemini toggle<cr>", desc = "Toggle Gemini CLI" },
+    { "<leader>ma", "<cmd>Gemini ask<cr>", desc = "Ask Gemini", mode = { "n", "v" } },
+    { "<leader>mf", "<cmd>Gemini add_file<cr>", desc = "Add File" },
+    { "<leader>mh", "<cmd>Gemini health<cr>", desc = "Health Check" },
+    { "<leader>md", "<cmd>Gemini add_diagnostics<cr>", desc = "Add Diagnostics" },
   },
   opts = {
     -- Comando de Gemini CLI
@@ -79,17 +82,18 @@ return {
         [[
 Google Gemini CLI - Guía rápida:
 
-<leader>gg - Abrir/cerrar Gemini
-<leader>ga - Preguntar a Gemini
-<leader>gf - Añadir archivo actual
-<leader>gd - Enviar diagnósticos (errores/warnings)
-<leader>gh - Verificar estado del plugin
+<leader>mm - Abrir/cerrar Gemini
+<leader>ma - Preguntar a Gemini
+<leader>mf - Añadir archivo actual
+<leader>md - Enviar diagnósticos (errores/warnings)
+<leader>mh - Verificar estado del plugin
+<leader>mx - Fix errores automáticamente
 
 Workflow:
-1. Abre Gemini con <leader>gg
-2. Añade contexto con <leader>gf
-3. Pregunta con <leader>ga o escribe directamente
-4. Envía errores con <leader>gd para que los analice
+1. Abre Gemini con <leader>mm
+2. Añade contexto con <leader>mf
+3. Pregunta con <leader>ma o escribe directamente
+4. Envía errores con <leader>md para que los analice
 
 Uso interactivo:
   :Gemini send "tu pregunta"
@@ -100,6 +104,9 @@ Configuración de API Key:
 
 Obtener API Key:
   https://makersuite.google.com/app/apikey
+
+NOTA: Keybindings cambiados de <leader>g a <leader>m
+      para evitar conflicto con comandos de Git
 ]],
         vim.log.levels.INFO,
         { title = "Gemini CLI" }
@@ -117,6 +124,6 @@ Obtener API Key:
     end, { desc = "Ask Gemini to fix errors" })
 
     -- Keybinding adicional para fix rápido de errores
-    vim.keymap.set("n", "<leader>gx", ":GeminiFixErrors<cr>", { desc = "Fix Errors with Gemini" })
+    vim.keymap.set("n", "<leader>mx", ":GeminiFixErrors<cr>", { desc = "Fix Errors with Gemini" })
   end,
 }

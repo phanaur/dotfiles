@@ -81,16 +81,18 @@ source ~/.bashrc
 | `<leader>cb` | Normal | Añadir buffer actual al contexto |
 | `<leader>cs` | Visual | Enviar selección a Claude |
 
-### Google Gemini (`<leader>g`)
+### Google Gemini (`<leader>m`)
+
+**NOTA:** Keybindings cambiados de `<leader>g` a `<leader>m` para evitar conflicto con Git.
 
 | Atajo | Modo | Descripción |
 |-------|------|-------------|
-| `<leader>gg` | Normal | Toggle terminal de Gemini |
-| `<leader>ga` | Normal/Visual | Ask Gemini |
-| `<leader>gf` | Normal | Añadir archivo actual |
-| `<leader>gd` | Normal | Enviar diagnósticos |
-| `<leader>gh` | Normal | Health check |
-| `<leader>gx` | Normal | Fix errores automático |
+| `<leader>mm` | Normal | Toggle terminal de Gemini |
+| `<leader>ma` | Normal/Visual | Ask Gemini |
+| `<leader>mf` | Normal | Añadir archivo actual |
+| `<leader>md` | Normal | Enviar diagnósticos |
+| `<leader>mh` | Normal | Health check |
+| `<leader>mx` | Normal | Fix errores automático |
 
 ## 📖 Workflows Comunes
 
@@ -115,16 +117,16 @@ source ~/.bashrc
 ### Gemini CLI - Workflow básico
 
 ```vim
-1. Abrir Gemini:           <leader>gg
-2. Añadir archivo:         <leader>gf
-3. Preguntar:              <leader>ga
-4. Ver errores:            <leader>gd
-5. Fix automático:         <leader>gx
+1. Abrir Gemini:           <leader>mm
+2. Añadir archivo:         <leader>mf
+3. Preguntar:              <leader>ma
+4. Ver errores:            <leader>md
+5. Fix automático:         <leader>mx
 ```
 
 **Ejemplo práctico:**
 1. Abre un archivo con errores
-2. `<leader>gx` para enviar diagnósticos y pedir soluciones
+2. `<leader>mx` para enviar diagnósticos y pedir soluciones
 3. Gemini analizará todos los errores del archivo
 4. Te dará soluciones específicas para cada uno
 
@@ -135,13 +137,13 @@ source ~/.bashrc
 <leader>cc → "Implement user authentication with JWT"
 
 # Usa Gemini para análisis de errores
-<leader>gx → Analiza y fix automático de errores
+<leader>mx → Analiza y fix automático de errores
 
 # Usa Claude para refactoring
 <leader>cs (visual) → "Refactor this to use async/await"
 
 # Usa Gemini para explicaciones
-<leader>ga → "Explain this algorithm"
+<leader>ma → "Explain this algorithm"
 ```
 
 ## 🎯 Comandos Útiles
@@ -299,7 +301,7 @@ python --version  # Debe ser 3.8+
 <leader>cc → "Add user registration endpoint with validation"
 
 " Gemini para debugging rápido
-<leader>gx → Analiza todos los errores
+<leader>mx → Analiza todos los errores
 ```
 
 ### 4. Workflow de refactoring
@@ -363,7 +365,7 @@ Estos archivos ya están incluidos en tu dotfiles y se sincronizan automáticame
 
 4. **Workflow básico:**
    - `<leader>cc` para Claude
-   - `<leader>gg` para Gemini (opcional)
+   - `<leader>mm` para Gemini (opcional)
    - ¡Empieza a programar con IA!
 
 ### En nuevos dispositivos:
