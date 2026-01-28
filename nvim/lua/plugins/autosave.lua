@@ -1,41 +1,28 @@
--- ============================================================================
 -- Auto-save Configuration
--- Automatically save files when certain events occur
--- ============================================================================
-
 return {
   {
     "okuuva/auto-save.nvim",
     event = { "InsertLeave", "TextChanged" },
     opts = {
-      enabled = true, -- Activar auto-save por defecto
+      enabled = true,
       trigger_events = {
-        immediate_save = { "BufLeave", "FocusLost" }, -- Guardar al cambiar de buffer o perder foco
-        defer_save = { "InsertLeave", "TextChanged" }, -- Guardar después de salir de insertar o cambiar texto
-        cancel_deferred_save = { "InsertEnter" }, -- Cancelar guardado si vuelves a insertar
+        immediate_save = { "BufLeave", "FocusLost" },
+        defer_save = { "InsertLeave", "TextChanged" },
+        cancel_deferred_save = { "InsertEnter" },
       },
       condition = function(buf)
         local fn = vim.fn
         local utils = require("auto-save.utils.data")
-
-        -- No guardar si:
-        if
-          fn.getbufvar(buf, "&modifiable") == 1 -- El buffer es modificable
-          and utils.not_in(fn.getbufvar(buf, "&filetype"), {}) -- No está en lista de exclusión
-        then
-          return true -- Sí, guardar
+        if fn.getbufvar(buf, "&modifiable") == 1 and utils.not_in(fn.getbufvar(buf, "&filetype"), {}) then
+          return true
         end
-        return false -- No guardar
+        return false
       end,
-      write_all_buffers = false, -- Solo guardar el buffer actual
-      debounce_delay = 1000, -- Esperar 1 segundo después del último cambio antes de guardar
+      write_all_buffers = false,
+      debounce_delay = 1000,
     },
     keys = {
-      {
-        "<leader>ua",
-        "<cmd>ASToggle<cr>",
-        desc = "Toggle Auto-save",
-      },
+      { "<leader>ua", "<cmd>ASToggle<cr>", desc = "Toggle Auto-save" },
     },
   },
 }

@@ -1,6 +1,6 @@
 -- Configuración de Roslyn LSP (oficial de Microsoft)
 return {
-  -- Deshabilitar OmniSharp
+  -- Deshabilitar OmniSharp en Neovim (se usa en Helix)
   {
     "neovim/nvim-lspconfig",
     opts = {
@@ -10,7 +10,7 @@ return {
     },
   },
 
-  -- Roslyn LSP
+  -- Roslyn LSP (oficial de Microsoft para C#)
   {
     "seblj/roslyn.nvim",
     ft = "cs",
@@ -27,7 +27,16 @@ return {
             },
             ["csharp|inlay_hints"] = {
               csharp_enable_inlay_hints_for_implicit_variable_types = true,
+              csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+              csharp_enable_inlay_hints_for_types = true,
               dotnet_enable_inlay_hints_for_parameters = true,
+              dotnet_enable_inlay_hints_for_literal_parameters = true,
+              dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+              dotnet_enable_inlay_hints_for_indexer_parameters = true,
+              dotnet_enable_inlay_hints_for_other_parameters = true,
+              dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = false,
             },
           },
         },

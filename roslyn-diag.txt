@@ -1,0 +1,65 @@
+======================================================================
+Roslyn LSP Diagnostic Tool
+======================================================================
+
+[0;34m[1/7] Checking csharp-roslyn.lua file...[0m
+[0;32m✓ File exists: /home/phanaur/.config/nvim/lua/plugins/csharp-roslyn.lua[0m
+[0;32m✓ File contains roslyn.nvim plugin[0m
+
+[0;34m[2/7] Checking .NET SDK...[0m
+[0;32m✓ .NET SDK installed: 10.0.102[0m
+[0;32m✓ .NET version is compatible (8.0+)[0m
+
+[0;34m[3/7] Checking Lazy plugins directory...[0m
+[0;32m✓ Lazy plugins directory exists[0m
+[0;32m✓ roslyn.nvim plugin is installed[0m
+[0;32m✓ roslyn.nvim appears complete[0m
+
+[0;34m[4/7] Checking Roslyn LSP server...[0m
+[1;33m⚠ Roslyn server not installed yet[0m
+  This is normal. It downloads on first use of a .cs file.
+
+[0;34m[5/7] Checking LazyVim configuration...[0m
+[0;32m✓ lazy.lua config exists[0m
+[1;33m⚠ C# language extras not found in lazy.lua[0m
+  This is OK if using custom csharp-roslyn.lua
+
+[0;34m[6/7] Testing Neovim Lua configuration...[0m
+[0;32m✓ Roslyn module can be loaded[0m
+
+[0;34m[7/7] Checking for common issues...[0m
+[1;33m⚠ Neovim is currently running[0m
+  If you just copied csharp-roslyn.lua, restart Neovim!
+[0;32m✓ roslyn.nvim is in lazy-lock.json[0m
+
+======================================================================
+Diagnosis Summary
+======================================================================
+
+Next steps to try:
+
+1. If Neovim was running when you copied files:
+   → Close Neovim completely and reopen
+
+2. If roslyn.nvim is not installed:
+   nvim
+   :Lazy sync
+   :qa
+
+3. Open a C# project and wait 30 seconds:
+   cd /path/to/csharp/project
+   nvim Program.cs
+   # Wait for Roslyn to download (first time only)
+
+4. Check LSP status while in a .cs file:
+   :LspInfo
+   # Should show 'roslyn' as attached
+
+5. Check for errors:
+   :messages
+   :checkhealth roslyn
+
+6. If still not working, check logs:
+   cat ~/.local/state/nvim/lsp.log | grep -i roslyn
+
+======================================================================
