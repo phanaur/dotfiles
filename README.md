@@ -211,6 +211,39 @@ nvim
 # Buscar y instalar: omnisharp, rust-analyzer, gopls, etc.
 ```
 
+### C# diagnostics no aparecen en Neovim
+
+**Síntomas**: No aparecen warnings, errores o IntelliSense en archivos .cs
+
+**Causa**: Falta el archivo `csharp-roslyn.lua` que configura Roslyn LSP.
+
+**Verificación**:
+```bash
+# Ejecutar script de verificación
+~/github/dotfiles/scripts/verify-config.sh
+
+# O verificar manualmente
+ls ~/.config/nvim/lua/plugins/csharp-roslyn.lua
+```
+
+**Solución**:
+```bash
+# Opción 1: Actualizar dotfiles y reinstalar
+cd ~/github/dotfiles
+git pull
+./scripts/setup-dev-env.sh
+
+# Opción 2: Copiar archivo manualmente
+cp ~/github/dotfiles/nvim/lua/plugins/csharp-roslyn.lua \
+   ~/.config/nvim/lua/plugins/
+
+# Luego reiniciar Neovim y verificar
+nvim
+:Lazy sync
+# Abrir archivo .cs y esperar unos segundos
+# Verificar con :LspInfo
+```
+
 ### Helix no encuentra grammars
 ```bash
 hx --grammar fetch
