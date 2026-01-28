@@ -374,7 +374,57 @@ return {
 }
 EOF
 
-log_success "LazyVim configuration files created"
+# Create C# Roslyn LSP configuration
+cat > "$NVIM_PLUGINS_DIR/csharp-roslyn.lua" << 'EOF'
+-- Configuración de Roslyn LSP (oficial de Microsoft)
+return {
+  -- Deshabilitar OmniSharp en Neovim (se usa en Helix)
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        omnisharp = false,
+      },
+    },
+  },
+
+  -- Roslyn LSP (oficial de Microsoft para C#)
+  {
+    "seblj/roslyn.nvim",
+    ft = "cs",
+    config = function()
+      require("roslyn").setup({
+        config = {
+          settings = {
+            ["csharp|background_analysis"] = {
+              dotnet_analyzer_diagnostics_scope = "fullSolution",
+              dotnet_compiler_diagnostics_scope = "fullSolution",
+            },
+            ["csharp|code_lens"] = {
+              dotnet_enable_references_code_lens = true,
+            },
+            ["csharp|inlay_hints"] = {
+              csharp_enable_inlay_hints_for_implicit_variable_types = true,
+              csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+              csharp_enable_inlay_hints_for_types = true,
+              dotnet_enable_inlay_hints_for_parameters = true,
+              dotnet_enable_inlay_hints_for_literal_parameters = true,
+              dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+              dotnet_enable_inlay_hints_for_indexer_parameters = true,
+              dotnet_enable_inlay_hints_for_other_parameters = true,
+              dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = false,
+            },
+          },
+        },
+      })
+    end,
+  },
+}
+EOF
+
+log_success "LazyVim configuration files created (including Roslyn LSP for C#)"
 
 # ============================================================================
 # 4. Helix Configuration
