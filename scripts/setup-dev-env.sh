@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Setup Development Environment (multi-distro)
+# Setup Development Environment for Fedora 43
 # Configures LazyVim + Helix with all language servers and modern features
 # ============================================================================
 
@@ -30,90 +30,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Detect distribution and select package manager
-log_info "Detecting Linux distribution..."
-PKG_MANAGER=""
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    distro_id="$(echo "$ID" | tr '[:upper:]' '[:lower:]')"
-    distro_like="$(echo "${ID_LIKE:-}" | tr '[:upper:]' '[:lower:]')"
-else
-    distro_id=""
-    distro_like=""
+# Check if running on Fedora
+if [ ! -f /etc/fedora-release ]; then
+    log_error "This script is designed for Fedora. Exiting."
+    exit 1
 fi
 
-case "$distro_id" in
-    ubuntu|debian)
-        PKG_MANAGER="apt"
-        ;;
-    arch)
-        PKG_MANAGER="pacman"
-        ;;
-    fedora)
-        PKG_MANAGER="dnf"
-        ;;
-    opensuse*|suse)
-        PKG_MANAGER="zypper"
-        ;;
-    *)
-        if echo "$distro_like" | grep -q "debian"; then
-            PKG_MANAGER="apt"
-        elif echo "$distro_like" | grep -q "rhel\|fedora"; then
-            PKG_MANAGER="dnf"
-        fi
-        ;;
-esac
-
-if [ -z "$PKG_MANAGER" ]; then
-    log_warning "Could not detect supported package manager from /etc/os-release; continuing but some automatic installs may fail."
-else
-    log_success "Detected package manager: $PKG_MANAGER"
-fi
-
-# Package manager wrappers
-pkg_update() {
-    case "$PKG_MANAGER" in
-        apt)
-            sudo apt update -y || sudo apt update
-            ;;
-        pacman)
-            sudo pacman -Syu --noconfirm
-            ;;
-        dnf)
-            sudo dnf update -y
-            ;;
-        zypper)
-            sudo zypper refresh && sudo zypper -n update
-            ;;
-        *)
-            log_warning "No supported package manager detected"
-            return 1
-            ;;
-    esac
-}
-
-pkg_install() {
-    case "$PKG_MANAGER" in
-        apt)
-            sudo apt install -y "$@"
-            ;;
-        pacman)
-            sudo pacman -S --noconfirm "$@"
-            ;;
-        dnf)
-            sudo dnf install -y "$@"
-            ;;
-        zypper)
-            sudo zypper -n install "$@"
-            ;;
-        *)
-            log_warning "No supported package manager detected"
-            return 1
-            ;;
-    esac
-}
-
-log_info "Starting development environment setup..."
+log_info "Starting development environment setup for Fedora 43..."
 
 # ============================================================================
 # 1. System Package Installation
@@ -122,23 +45,20 @@ log_info "Starting development environment setup..."
 log_info "Installing system packages..."
 
 # Update system
-pkg_update
+sudo dnf update -y
 
 # Install Neovim (latest stable)
 log_info "Installing Neovim..."
-pkg_install neovim
+sudo dnf install -y neovim
 
 # Install Helix
 log_info "Installing Helix..."
-pkg_install helix
+sudo dnf install -y helix
 
 # Install .NET SDK 10
 log_info "Installing .NET SDK 10..."
 if ! command -v dotnet &> /dev/null; then
-    log_info "Installing .NET SDK (if available via package manager)..."
-    if ! pkg_install dotnet-sdk-10.0 2>/dev/null; then
-        log_warning ".NET SDK package not available via package manager. Skipping; install manually from https://dotnet.microsoft.com/download"
-    fi
+    sudo dnf install -y dotnet-sdk-10.0
 else
     log_success ".NET SDK already installed: $(dotnet --version)"
 fi
@@ -158,31 +78,19 @@ rustup component add rustfmt clippy
 
 # Install Node.js and npm
 log_info "Installing Node.js and npm..."
-pkg_install nodejs npm
+sudo dnf install -y nodejs npm
 
 # Install Python and pip
 log_info "Installing Python..."
-pkg_install python3 python3-pip
-
-# Install Go
-log_info "Installing Go..."
-if ! command -v go &> /dev/null; then
-    pkg_install golang || pkg_install go || log_warning "Go package not available via package manager; install manually from https://golang.org/dl/"
-else
-    log_success "Go already installed: $(go version)"
-fi
+sudo dnf install -y python3 python3-pip
 
 # Install build tools
 log_info "Installing build tools..."
-pkg_install gcc gcc-c++ clang clang-tools-extra make cmake
+sudo dnf install -y gcc gcc-c++ clang clang-tools-extra make cmake
 
 # Install additional tools
 log_info "Installing additional tools..."
-pkg_install git curl wget unzip ripgrep fd-find || true
-# On some distros fd-find is called 'fd' or 'fdfind'
-if ! command -v fd &> /dev/null && command -v fdfind &> /dev/null; then
-    ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd" || true
-fi
+sudo dnf install -y git curl wget unzip ripgrep fd-find
 
 # ============================================================================
 # 2. Language Servers and Formatters Installation
@@ -196,44 +104,21 @@ pip3 install --user pyright black
 
 # TypeScript tools
 log_info "Installing TypeScript tools..."
-npm install -g typescript typescript-language-server prettier 2>/dev/null || sudo npm install -g typescript typescript-language-server prettier
+sudo npm install -g typescript typescript-language-server prettier
 
 # YAML tools
 log_info "Installing YAML language server..."
-npm install -g yaml-language-server 2>/dev/null || sudo npm install -g yaml-language-server
+sudo npm install -g yaml-language-server
 
 # JSON/HTML/CSS language servers
 log_info "Installing VSCode language servers..."
-npm install -g vscode-langservers-extracted 2>/dev/null || sudo npm install -g vscode-langservers-extracted
-
-# Claude Code CLI (AI Assistant)
-log_info "Installing Claude Code CLI..."
-if ! command -v claude &> /dev/null; then
-    log_info "Downloading and running official installation script..."
-    if curl -fsSL https://claude.ai/install.sh | bash; then
-        # Reload shell to get claude in PATH
-        export PATH="$HOME/.claude/bin:$PATH"
-        if command -v claude &> /dev/null; then
-            log_success "Claude Code CLI installed ($(claude --version 2>/dev/null | head -1))"
-            log_warning "Remember to authenticate later with: claude login"
-        else
-            log_warning "Claude Code CLI installed but not in PATH. Restart your terminal."
-        fi
-    else
-        log_warning "Failed to install Claude Code CLI. Install manually with: curl -fsSL https://claude.ai/install.sh | bash"
-    fi
-else
-    log_success "Claude Code CLI already installed ($(claude --version 2>/dev/null | head -1))"
-fi
+sudo npm install -g vscode-langservers-extracted
 
 # Markdown tools
 log_info "Installing Markdown tools (marksman)..."
 MARKSMAN_VERSION="2023-12-09"
 if ! command -v marksman &> /dev/null; then
-    # Try distro package first, else download binary
-if ! pkg_install marksman 2>/dev/null; then
     wget -q "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/marksman-linux-x64" -O /tmp/marksman
-fi
     chmod +x /tmp/marksman
     sudo mv /tmp/marksman /usr/local/bin/marksman
 fi
@@ -242,35 +127,6 @@ fi
 log_info "Installing TOML language server (taplo)..."
 if ! command -v taplo &> /dev/null; then
     cargo install taplo-cli --locked
-fi
-
-# Go tools (gopls, gofmt, goimports)
-log_info "Installing Go language server and tools..."
-if command -v go &> /dev/null; then
-    # Configure Go environment
-    export GOPATH="$HOME/go"
-    export PATH="$PATH:$GOPATH/bin"
-    
-    log_info "Installing gopls (Go language server)..."
-    go install golang.org/x/tools/gopls@latest
-    
-    log_info "Installing goimports (auto-imports organizer)..."
-    go install golang.org/x/tools/cmd/goimports@latest
-    
-    log_info "Installing delve (Go debugger)..."
-    go install github.com/go-delve/delve/cmd/dlv@latest
-    
-    # Add Go binaries to PATH permanently
-    if ! grep -q 'export PATH="$PATH:$HOME/go/bin"' "$HOME/.bashrc"; then
-        echo '' >> "$HOME/.bashrc"
-        echo '# Go binaries' >> "$HOME/.bashrc"
-        echo 'export PATH="$PATH:$HOME/go/bin"' >> "$HOME/.bashrc"
-        log_success "Added Go binaries to PATH in .bashrc"
-    fi
-    
-    log_success "Go tools installed (gopls, goimports, delve)"
-else
-    log_warning "Go not found. Skipping Go tools installation."
 fi
 
 # ============================================================================
@@ -587,9 +443,30 @@ log_info "This may take several minutes, especially for OmniSharp (~100MB)..."
 
 cat > /tmp/install_mason_packages.lua << 'EOF'
 -- Sync Lazy plugins first
-vim.cmd("Lazy sync")
+print("Starting Lazy plugin sync...")
 
+local lazy_ok, lazy = pcall(require, "lazy")
+if not lazy_ok then
+  print("✗ Failed to load Lazy")
+  vim.cmd("qa!")
+  return
+end
+
+local manage_ok, manage = pcall(require, "lazy.manage")
+if manage_ok then
+  print("✓ Starting Lazy sync...")
+  manage.sync({
+    wait = true,
+    show = false,
+  })
+else
+  print("✗ Failed to load lazy.manage")
+end
+
+-- Wait for Lazy sync to complete before installing Mason packages
+-- Increased delay to allow plugin sync to finish
 vim.defer_fn(function()
+  print("\n✓ Starting Mason package installation...")
   -- Packages list
   local packages = {
     "omnisharp",         -- For Helix (large, ~100MB)
@@ -677,8 +554,8 @@ vim.defer_fn(function()
       print("Some packages may still be installing in the background.")
       vim.cmd("qa!")
     end, 600000)
-  end, 2000)
-end, 3000)
+  end, 3000)
+end, 10000)  -- Wait 10 seconds for Lazy sync to complete
 EOF
 
 echo ""
@@ -874,20 +751,6 @@ else
     log_error "Python not found"
 fi
 
-# Check Go
-if command -v go &> /dev/null; then
-    log_success "Go: $(go version | awk '{print $3, $4}')"
-    
-    # Check gopls
-    if command -v gopls &> /dev/null; then
-        log_success "gopls: $(gopls version | head -1)"
-    else
-        log_warning "gopls not found (Go language server)"
-    fi
-else
-    log_error "Go not found"
-fi
-
 # Check OmniSharp symlink
 if [ -L ~/.local/bin/omnisharp ]; then
     log_success "OmniSharp: symlink created for Helix"
@@ -902,35 +765,18 @@ log_success "Development environment setup complete!"
 echo ""
 echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
-echo "  ✓ Roslyn LSP for C# (Neovim - modern)"
-echo "  ✓ OmniSharp LSP for C# (Helix - shared via symlink)"
-echo "  ✓ gopls for Go (both editors)"
-if command -v claude &> /dev/null; then
-    echo "  ✓ Claude Code CLI (AI assistant for Neovim)"
-else
-    echo "  ⚠ Claude Code CLI not installed (optional)"
-fi
+echo "  ✓ Roslyn LSP for C# (Neovim)"
+echo "  ✓ OmniSharp LSP for C# (Helix)"
 echo "  ✓ Auto-save enabled (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
 echo "  ✓ Configuration templates created"
 echo ""
 echo "Next steps:"
-echo "  1. Restart your terminal (to load Go binaries in PATH)"
-if command -v claude &> /dev/null; then
-    echo "  2. Authenticate Claude Code: claude login"
-    echo "  3. Open Neovim: nvim"
-else
-    echo "  2. Open Neovim: nvim"
-fi
-echo "     - Plugins will sync automatically"
-echo "     - Check :Mason for installed language servers"
-if command -v claude &> /dev/null; then
-    echo "     - Test Claude Code: <leader>cc"
-fi
-echo "  4. Open Helix: hx"
-echo "     - OmniSharp should work via symlink"
-echo "  5. For C# projects, copy templates:"
+echo "  1. Restart your terminal"
+echo "  2. Open Neovim: nvim"
+echo "  3. Wait for plugins to sync"
+echo "  4. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
 echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
 echo ""
