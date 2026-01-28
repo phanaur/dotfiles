@@ -587,7 +587,7 @@ log_info "This may take several minutes, especially for OmniSharp (~100MB)..."
 
 cat > /tmp/install_mason_packages.lua << 'EOF'
 -- Sync Lazy plugins first
-vim.cmd("Lazy! sync")
+vim.cmd("Lazy sync")
 
 vim.defer_fn(function()
   -- Packages list

@@ -117,7 +117,7 @@ if command -v nvim &> /dev/null; then
     # Create headless sync script
     cat > /tmp/lazy_sync.lua << 'EOF'
 print("Starting Lazy plugin sync...")
-vim.cmd("Lazy! sync")
+vim.cmd("Lazy sync")
 
 -- Wait for sync to complete
 vim.defer_fn(function()
