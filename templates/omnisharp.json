@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json.schemastore.org/omnisharp",
+  "FormattingOptions": {
+    "EnableEditorConfigSupport": true,
+    "OrganizeImports": true
+  },
+  "RoslynExtensionsOptions": {
+    "EnableAnalyzersSupport": true,
+    "EnableImportCompletion": true,
+    "EnableDecompilationSupport": true,
+    "InlayHintsOptions": {
+      "EnableForParameters": true,
+      "EnableForTypes": true,
+      "ForImplicitVariableTypes": true,
+      "ForImplicitObjectCreation": true
+    }
+  },
+  "FileOptions": {
+    "SystemExcludeSearchPatterns": [
+      "**/node_modules/**/*",
+      "**/bin/**/*",
+      "**/obj/**/*",
+      "**/.git/**/*"
+    ]
+  },
+  "Sdk": {
+    "IncludePrereleases": true
+  },
+  "MsBuild": {
+    "LoadProjectsOnDemand": false,
+    "EnablePackageAutoRestore": true
+  }
+}

@@ -195,12 +195,20 @@ if ! command -v claude &> /dev/null; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         log_info "Installing Claude Code CLI..."
-        if command -v npm &> /dev/null; then
-            npm install -g @anthropic-ai/claude-code
-            log_success "Claude Code CLI installed"
-            log_warning "Remember to run 'claude login' to authenticate"
+        log_info "Downloading and running official installation script..."
+        if curl -fsSL https://claude.ai/install.sh | bash; then
+            # Reload shell to get claude in PATH
+            export PATH="$HOME/.claude/bin:$PATH"
+            if command -v claude &> /dev/null; then
+                log_success "Claude Code CLI installed: $(claude --version)"
+                log_warning "Remember to run 'claude login' to authenticate"
+            else
+                log_warning "Claude Code CLI installed but not in PATH yet."
+                log_warning "Restart your terminal or run: export PATH=\"\$HOME/.claude/bin:\$PATH\""
+            fi
         else
-            log_warning "npm not found. Install Node.js first or run setup-dev-env.sh"
+            log_warning "Failed to install Claude Code CLI."
+            log_warning "Install manually with: curl -fsSL https://claude.ai/install.sh | bash"
         fi
     fi
 else

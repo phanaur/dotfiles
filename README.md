@@ -243,8 +243,11 @@ chmod +x ~/.local/bin/omnisharp
 # Verificar instalación
 claude --version
 
-# Si no está instalado:
-npm install -g @anthropic-ai/claude-code
+# Si no está instalado, usar script oficial:
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Recargar PATH (o reiniciar terminal)
+export PATH="$HOME/.claude/bin:$PATH"
 
 # Autenticar
 claude login

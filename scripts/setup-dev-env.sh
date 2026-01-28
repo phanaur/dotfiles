@@ -209,15 +209,21 @@ npm install -g vscode-langservers-extracted 2>/dev/null || sudo npm install -g v
 # Claude Code CLI (AI Assistant)
 log_info "Installing Claude Code CLI..."
 if ! command -v claude &> /dev/null; then
-    npm install -g @anthropic-ai/claude-code 2>/dev/null || sudo npm install -g @anthropic-ai/claude-code
-    if command -v claude &> /dev/null; then
-        log_success "Claude Code CLI installed (v$(claude --version 2>/dev/null | head -1))"
-        log_warning "Remember to authenticate later with: claude login"
+    log_info "Downloading and running official installation script..."
+    if curl -fsSL https://claude.ai/install.sh | bash; then
+        # Reload shell to get claude in PATH
+        export PATH="$HOME/.claude/bin:$PATH"
+        if command -v claude &> /dev/null; then
+            log_success "Claude Code CLI installed ($(claude --version 2>/dev/null | head -1))"
+            log_warning "Remember to authenticate later with: claude login"
+        else
+            log_warning "Claude Code CLI installed but not in PATH. Restart your terminal."
+        fi
     else
-        log_warning "Failed to install Claude Code CLI. Install manually with: npm install -g @anthropic-ai/claude-code"
+        log_warning "Failed to install Claude Code CLI. Install manually with: curl -fsSL https://claude.ai/install.sh | bash"
     fi
 else
-    log_success "Claude Code CLI already installed (v$(claude --version 2>/dev/null | head -1))"
+    log_success "Claude Code CLI already installed ($(claude --version 2>/dev/null | head -1))"
 fi
 
 # Markdown tools

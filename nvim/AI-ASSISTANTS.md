@@ -25,15 +25,12 @@ Si usaste los scripts de instalación de dotfiles (`setup-dev-env.sh` o `install
 
 **Instalación manual (si es necesario):**
 
-**Opción 1: NPM**
 ```bash
-npm install -g @anthropic-ai/claude-code
+# Script oficial de instalación (RECOMENDADO)
+curl -fsSL https://claude.ai/install.sh | bash
 ```
 
-**Opción 2: Script oficial**
-```bash
-curl -fsSL https://claude.ai/install.sh | sh
-```
+**Nota:** La instalación vía npm (`npm install -g @anthropic-ai/claude-code`) ya no está soportada. Usa el script oficial.
 
 **Autenticación (REQUERIDO):**
 ```bash

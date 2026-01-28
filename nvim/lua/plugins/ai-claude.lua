@@ -6,9 +6,10 @@
 -- Requiere: Claude Code CLI instalado y autenticado
 --
 -- Instalación del CLI:
---   npm install -g claude-cli
--- o:
---   curl -fsSL https://claude.ai/install.sh | sh
+--   curl -fsSL https://claude.ai/install.sh | bash
+--
+-- NOTA: La instalación vía npm ya no está soportada.
+--       Usa el script oficial de instalación.
 --
 -- Autenticación:
 --   claude login
