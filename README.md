@@ -189,6 +189,28 @@ hx --grammar build
 
 ## 🐛 Solución de Problemas
 
+### La instalación se queda atascada
+
+**Síntomas**: El script parece congelarse durante la instalación de plugins o Mason.
+
+**Causa**: OmniSharp es grande (~100MB) y puede tardar varios minutos en descargarse.
+
+**Solución**:
+```bash
+# El script ahora tiene:
+# - Timeout de 10 minutos (suficiente para OmniSharp)
+# - Indicador de progreso (puntos)
+# - Verificación activa del estado
+
+# Si aún así se queda atascado:
+# 1. Cancela con Ctrl+C
+# 2. Instala manualmente:
+nvim
+:Lazy sync
+:Mason
+# Buscar y instalar: omnisharp, rust-analyzer, gopls, etc.
+```
+
 ### Helix no encuentra grammars
 ```bash
 hx --grammar fetch
@@ -206,10 +228,30 @@ nvim
 # Verificar symlink
 ls -la ~/.local/bin/omnisharp
 
-# Reinstalar
+# Si no existe, reinstalar vía Mason:
 nvim
 :Mason
 # Buscar omnisharp y reinstalar
+
+# Luego crear symlink manualmente:
+ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp
+chmod +x ~/.local/bin/omnisharp
+```
+
+### Claude Code no funciona
+```bash
+# Verificar instalación
+claude --version
+
+# Si no está instalado:
+npm install -g @anthropic-ai/claude-code
+
+# Autenticar
+claude login
+
+# Verificar en Neovim
+nvim
+:ClaudeHelp
 ```
 
 ## 📚 Documentación

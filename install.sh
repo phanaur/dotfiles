@@ -113,11 +113,72 @@ log_info "Setting up Neovim plugins..."
 
 if command -v nvim &> /dev/null; then
     log_info "Syncing Neovim plugins (this may take a few minutes)..."
-    log_info "Neovim will open and sync plugins. Close it when done."
 
-    read -p "Press Enter to open Neovim and sync plugins..."
-    nvim
+    # Create headless sync script
+    cat > /tmp/lazy_sync.lua << 'EOF'
+print("Starting Lazy plugin sync...")
+vim.cmd("Lazy! sync")
 
+-- Wait for sync to complete
+vim.defer_fn(function()
+  print("Lazy sync initiated. Waiting for completion...")
+
+  -- Check every 2 seconds if sync is complete
+  local function check_sync()
+    local lazy_ok, lazy = pcall(require, "lazy")
+    if lazy_ok then
+      local plugins = lazy.plugins()
+      local all_done = true
+
+      for _, plugin in pairs(plugins) do
+        if plugin._.updating or plugin._.cloning then
+          all_done = false
+          break
+        end
+      end
+
+      if all_done then
+        print("✓ Lazy sync complete!")
+        vim.defer_fn(function()
+          vim.cmd("qa!")
+        end, 2000)
+      else
+        vim.defer_fn(check_sync, 2000)
+      end
+    else
+      print("Lazy not available yet, retrying...")
+      vim.defer_fn(check_sync, 2000)
+    end
+  end
+
+  check_sync()
+
+  -- Safety timeout: 5 minutes
+  vim.defer_fn(function()
+    print("⚠ Timeout reached. Some plugins may still be syncing.")
+    vim.cmd("qa!")
+  end, 300000)
+end, 3000)
+EOF
+
+    echo ""
+    echo "Syncing plugins in headless mode..."
+    echo ""
+
+    nvim --headless -c "luafile /tmp/lazy_sync.lua" 2>&1 &
+    NVIM_PID=$!
+
+    # Show progress indicator
+    while kill -0 $NVIM_PID 2>/dev/null; do
+      echo -n "."
+      sleep 2
+    done
+
+    wait $NVIM_PID
+    echo ""
+    echo ""
+
+    rm -f /tmp/lazy_sync.lua
     log_success "Neovim plugins synced"
 else
     log_warning "Neovim not found. Install it first or run setup-dev-env.sh"

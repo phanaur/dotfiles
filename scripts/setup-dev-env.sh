@@ -206,6 +206,20 @@ npm install -g yaml-language-server 2>/dev/null || sudo npm install -g yaml-lang
 log_info "Installing VSCode language servers..."
 npm install -g vscode-langservers-extracted 2>/dev/null || sudo npm install -g vscode-langservers-extracted
 
+# Claude Code CLI (AI Assistant)
+log_info "Installing Claude Code CLI..."
+if ! command -v claude &> /dev/null; then
+    npm install -g @anthropic-ai/claude-code 2>/dev/null || sudo npm install -g @anthropic-ai/claude-code
+    if command -v claude &> /dev/null; then
+        log_success "Claude Code CLI installed (v$(claude --version 2>/dev/null | head -1))"
+        log_warning "Remember to authenticate later with: claude login"
+    else
+        log_warning "Failed to install Claude Code CLI. Install manually with: npm install -g @anthropic-ai/claude-code"
+    fi
+else
+    log_success "Claude Code CLI already installed (v$(claude --version 2>/dev/null | head -1))"
+fi
+
 # Markdown tools
 log_info "Installing Markdown tools (marksman)..."
 MARKSMAN_VERSION="2023-12-09"
@@ -563,12 +577,16 @@ fi
 # ============================================================================
 
 log_info "Installing Mason packages (including OmniSharp)..."
+log_info "This may take several minutes, especially for OmniSharp (~100MB)..."
 
 cat > /tmp/install_mason_packages.lua << 'EOF'
+-- Sync Lazy plugins first
 vim.cmd("Lazy! sync")
+
 vim.defer_fn(function()
+  -- Packages list
   local packages = {
-    "omnisharp",
+    "omnisharp",         -- For Helix (large, ~100MB)
     "csharpier",
     "netcoredbg",
     "rust-analyzer",
@@ -590,39 +608,123 @@ vim.defer_fn(function()
   registry.refresh()
 
   vim.defer_fn(function()
+    local total = #packages
+    local installed = 0
+    local failed = {}
+    local in_progress = {}
+
+    -- Install packages with progress tracking
     for _, package_name in ipairs(packages) do
       local ok, package = pcall(registry.get_package, package_name)
       if ok then
         if not package:is_installed() then
-          print("Installing " .. package_name .. "...")
-          package:install()
+          print(string.format("[%d/%d] Installing %s...", installed + 1, total, package_name))
+          in_progress[package_name] = true
+
+          package:install():once("closed", function()
+            in_progress[package_name] = nil
+            if package:is_installed() then
+              installed = installed + 1
+              print(string.format("✓ %s installed successfully", package_name))
+            else
+              table.insert(failed, package_name)
+              print(string.format("✗ %s installation failed", package_name))
+            end
+          end)
         else
-          print(package_name .. " already installed")
+          installed = installed + 1
+          print(string.format("✓ %s already installed", package_name))
         end
       else
-        print("Package not found: " .. package_name)
+        table.insert(failed, package_name)
+        print(string.format("✗ Package not found: %s", package_name))
       end
     end
 
+    -- Monitor installation progress and exit when done
+    local function check_completion()
+      local still_running = false
+      for pkg, _ in pairs(in_progress) do
+        still_running = true
+        break
+      end
+
+      if not still_running then
+        print("\n========================================")
+        print(string.format("Installation complete: %d/%d packages", installed, total))
+        if #failed > 0 then
+          print("Failed packages: " .. table.concat(failed, ", "))
+        end
+        print("========================================\n")
+        vim.cmd("qa!")
+      else
+        vim.defer_fn(check_completion, 2000)
+      end
+    end
+
+    -- Start checking after initial delay
+    vim.defer_fn(check_completion, 5000)
+
+    -- Safety timeout: 10 minutes (for large packages like OmniSharp)
     vim.defer_fn(function()
-      print("Mason installation complete!")
+      print("\n⚠ Timeout reached (10 minutes). Forcing exit.")
+      print("Some packages may still be installing in the background.")
       vim.cmd("qa!")
-    end, 60000)
+    end, 600000)
   end, 2000)
-end, 2000)
+end, 3000)
 EOF
 
-nvim --headless -c "luafile /tmp/install_mason_packages.lua" 2>&1 | grep -E "(Installing|installed|complete)" || true
+echo ""
+echo "Installing packages in headless mode..."
+echo "This may take 5-10 minutes for large packages like OmniSharp."
+echo ""
+
+nvim --headless -c "luafile /tmp/install_mason_packages.lua" 2>&1 &
+NVIM_PID=$!
+
+# Show progress indicator while nvim is running
+while kill -0 $NVIM_PID 2>/dev/null; do
+  echo -n "."
+  sleep 2
+done
+
+wait $NVIM_PID
+echo ""
+echo ""
+
 rm -f /tmp/install_mason_packages.lua
 
 # Create symlink for OmniSharp so Helix can use it
-log_info "Creating symlink for OmniSharp..."
+log_info "Creating symlink for OmniSharp (for Helix)..."
 mkdir -p ~/.local/bin
-if [ -f ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ]; then
-    ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp
-    log_success "OmniSharp symlink created for Helix"
-else
-    log_warning "OmniSharp not found in Mason packages. Install it manually with :Mason in Neovim"
+
+# Wait for OmniSharp to finish installing (with retries)
+OMNISHARP_PATH="$HOME/.local/share/nvim/mason/packages/omnisharp/OmniSharp"
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if [ -f "$OMNISHARP_PATH" ]; then
+        ln -sf "$OMNISHARP_PATH" "$HOME/.local/bin/omnisharp"
+        chmod +x "$HOME/.local/bin/omnisharp"
+        log_success "OmniSharp symlink created for Helix"
+        break
+    else
+        if [ $RETRY_COUNT -eq 0 ]; then
+            log_info "Waiting for OmniSharp to finish installing..."
+        fi
+        sleep 2
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+    fi
+done
+
+if [ ! -f "$OMNISHARP_PATH" ]; then
+    log_warning "OmniSharp not found after waiting. You may need to:"
+    log_warning "  1. Open Neovim: nvim"
+    log_warning "  2. Run: :Mason"
+    log_warning "  3. Install omnisharp manually"
+    log_warning "  4. Create symlink: ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp"
 fi
 
 # ============================================================================
@@ -794,9 +896,14 @@ log_success "Development environment setup complete!"
 echo ""
 echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
-echo "  ✓ Roslyn LSP for C# (Neovim)"
-echo "  ✓ OmniSharp LSP for C# (Helix)"
+echo "  ✓ Roslyn LSP for C# (Neovim - modern)"
+echo "  ✓ OmniSharp LSP for C# (Helix - shared via symlink)"
 echo "  ✓ gopls for Go (both editors)"
+if command -v claude &> /dev/null; then
+    echo "  ✓ Claude Code CLI (AI assistant for Neovim)"
+else
+    echo "  ⚠ Claude Code CLI not installed (optional)"
+fi
 echo "  ✓ Auto-save enabled (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
@@ -804,9 +911,20 @@ echo "  ✓ Configuration templates created"
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal (to load Go binaries in PATH)"
-echo "  2. Open Neovim: nvim"
-echo "  3. Wait for plugins to sync"
-echo "  4. For C# projects, copy templates:"
+if command -v claude &> /dev/null; then
+    echo "  2. Authenticate Claude Code: claude login"
+    echo "  3. Open Neovim: nvim"
+else
+    echo "  2. Open Neovim: nvim"
+fi
+echo "     - Plugins will sync automatically"
+echo "     - Check :Mason for installed language servers"
+if command -v claude &> /dev/null; then
+    echo "     - Test Claude Code: <leader>cc"
+fi
+echo "  4. Open Helix: hx"
+echo "     - OmniSharp should work via symlink"
+echo "  5. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"
 echo "     cp ~/omnisharp.json.template <project>/omnisharp.json"
 echo ""
