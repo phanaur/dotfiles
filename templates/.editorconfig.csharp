@@ -37,3 +37,34 @@ dotnet_style_null_propagation = true:warning
 
 # 'using' directives
 csharp_using_directive_placement = outside_namespace:warning
+
+# ============================================================================
+# CODE ANALYSIS RULES (Analyzers de calidad de código)
+# ============================================================================
+
+# CA1515: Considerar hacer los tipos públicos internos si no se usan fuera del assembly
+dotnet_diagnostic.CA1515.severity = suggestion
+
+# CA1812: Evitar clases internas no instanciadas
+dotnet_diagnostic.CA1812.severity = warning
+
+# CA1822: Marcar miembros como static
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# IDE0040: Añadir modificadores de accesibilidad
+dotnet_diagnostic.IDE0040.severity = warning
+
+# IDE0051: Eliminar miembros privados no usados
+dotnet_diagnostic.IDE0051.severity = warning
+
+# IDE0052: Eliminar miembros privados no leídos
+dotnet_diagnostic.IDE0052.severity = warning
+
+# CA1050: No declarar tipos en namespaces
+dotnet_diagnostic.CA1050.severity = warning
+
+# CA1711: Los identificadores no deben tener sufijos incorrectos
+dotnet_diagnostic.CA1711.severity = suggestion
+
+# Habilitar análisis de código completo
+dotnet_analyzer_diagnostic.severity = default
