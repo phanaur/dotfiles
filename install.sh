@@ -85,10 +85,10 @@ get_install_hint() {
             esac ;;
         python)
             case "$distro" in
-                fedora)   echo "sudo dnf install python3 python3-pip" ;;
-                ubuntu)   echo "sudo apt install python3 python3-pip" ;;
-                arch)     echo "sudo pacman -S python python-pip" ;;
-                opensuse) echo "sudo zypper install python3 python3-pip" ;;
+                fedora)   echo "sudo dnf install python3 python3-pip pipx" ;;
+                ubuntu)   echo "sudo apt install python3 python3-pip pipx" ;;
+                arch)     echo "sudo pacman -S python python-pipx" ;;
+                opensuse) echo "sudo zypper install python3 python3-pip pipx" ;;
                 *)        echo "Install Python from https://python.org" ;;
             esac ;;
         gcc)
@@ -515,7 +515,7 @@ echo "  Language servers:"
 check_tool "omnisharp" "omnisharp" "C#" "Run: ./install.sh (section 7) or ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp"
 check_tool "gopls" "gopls" "Go" "Run: go install golang.org/x/tools/gopls@latest"
 check_tool "rust-analyzer" "rust-analyzer" "Rust" "Run: rustup component add rust-analyzer"
-check_tool "pyright" "pyright-langserver" "Python" "Run: pip3 install --user pyright"
+check_tool "pyright" "pyright-langserver" "Python" "Run: pipx install pyright (or: sudo pacman -S pyright on Arch)"
 check_tool "ts-language-server" "typescript-language-server" "JS/TS" "Run: sudo npm install -g typescript-language-server"
 check_tool "yaml-language-server" "yaml-language-server" "YAML" "Run: sudo npm install -g yaml-language-server"
 check_tool "vscode-json-ls" "vscode-json-language-server" "JSON" "Run: sudo npm install -g vscode-langservers-extracted"
@@ -527,7 +527,7 @@ echo ""
 echo "  Formatters:"
 check_tool "csharpier" "csharpier" "C#" "Run: dotnet tool install -g csharpier"
 check_tool "prettier" "prettier" "JS/TS/YAML/HTML/CSS/MD" "Run: sudo npm install -g prettier"
-check_tool "black" "black" "Python" "Run: pip3 install --user black"
+check_tool "black" "black" "Python" "Run: pipx install black (or: sudo pacman -S python-black on Arch)"
 check_tool "rustfmt" "rustfmt" "Rust" "Run: rustup component add rustfmt"
 check_tool "goimports" "goimports" "Go" "Run: go install golang.org/x/tools/cmd/goimports@latest"
 check_tool "clang-format" "clang-format" "C/C++" "Run: $(get_install_hint clang-format "$DETECTED_DISTRO")"

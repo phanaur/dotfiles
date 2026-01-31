@@ -205,11 +205,11 @@ rustup component add rustfmt clippy rust-analyzer
 log_info "Installing Node.js and npm..."
 pkg_install "$DISTRO" nodejs npm
 
-# Install Python and pip
+# Install Python and pipx
 log_info "Installing Python..."
 case "$DISTRO" in
-    arch) pkg_install "$DISTRO" python python-pip ;;
-    *)    pkg_install "$DISTRO" python3 python3-pip ;;
+    arch) pkg_install "$DISTRO" python python-pipx ;;
+    *)    pkg_install "$DISTRO" python3 python3-pip pipx ;;
 esac
 
 # Install build tools
@@ -238,7 +238,15 @@ log_info "Installing language servers and formatters..."
 
 # Python tools
 log_info "Installing Python tools (pyright, black)..."
-pip3 install --user pyright black
+case "$DISTRO" in
+    arch)
+        pkg_install "$DISTRO" pyright python-black
+        ;;
+    *)
+        pipx install pyright 2>/dev/null || pip3 install --user pyright
+        pipx install black 2>/dev/null || pip3 install --user black
+        ;;
+esac
 
 # TypeScript tools
 log_info "Installing TypeScript tools..."
