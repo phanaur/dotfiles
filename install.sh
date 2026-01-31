@@ -364,6 +364,12 @@ else
     log_warning "OmniSharp not found in Mason. Run :MasonInstall omnisharp in Neovim first, then re-run this script."
 fi
 
+# OmniSharp wrapper for Helix (filters invalid null messages)
+if [ -f "$DOTFILES_DIR/scripts/omnisharp-wrapper.sh" ]; then
+    ln -sf "$DOTFILES_DIR/scripts/omnisharp-wrapper.sh" "$HOME/.local/bin/omnisharp-wrapper"
+    log_success "OmniSharp wrapper symlinked to ~/.local/bin/omnisharp-wrapper"
+fi
+
 # csharpier (C# formatter)
 if command -v dotnet &> /dev/null; then
     if ! command -v dotnet-csharpier &> /dev/null && ! dotnet tool list -g 2>/dev/null | grep -q csharpier; then

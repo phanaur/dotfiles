@@ -14,8 +14,9 @@ formatter = { command = "csharpier", args = ["format", "--write-stdout"] }
 auto-format = true
 
 [language-server.omnisharp]
-command = "omnisharp"
-args = ["--languageserver", "--encoding", "utf-8", "--loglevel", "warning"]
+command = "omnisharp-wrapper"
+args = ["-lsp", "--encoding", "utf-8", "--loglevel", "warning"]
+timeout = 120
 
 [language.debugger]
 name = "netcoredbg"
