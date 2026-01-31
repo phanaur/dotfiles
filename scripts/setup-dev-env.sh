@@ -847,6 +847,8 @@ fi
 # Check Helix
 if command -v hx &> /dev/null; then
     log_success "Helix: $(hx --version)"
+elif command -v helix &> /dev/null; then
+    log_success "Helix: $(helix --version)"
 else
     log_error "Helix not found"
 fi

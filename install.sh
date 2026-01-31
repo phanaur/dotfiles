@@ -128,6 +128,15 @@ get_install_hint() {
 
 DETECTED_DISTRO=$(detect_distro)
 
+# Resolve Helix binary name (hx on most distros, helix on some)
+if command -v hx &> /dev/null; then
+    HELIX_CMD="hx"
+elif command -v helix &> /dev/null; then
+    HELIX_CMD="helix"
+else
+    HELIX_CMD=""
+fi
+
 echo "==================================================================="
 echo "Dotfiles Installation"
 echo "==================================================================="
@@ -201,16 +210,16 @@ fi
 
 log_info "Installing Helix tree-sitter grammars..."
 
-if command -v hx &> /dev/null; then
+if [ -n "$HELIX_CMD" ]; then
     log_info "Fetching grammars (this may take a few minutes)..."
-    hx --grammar fetch
+    "$HELIX_CMD" --grammar fetch
 
     log_info "Building grammars (this may take several minutes)..."
-    hx --grammar build
+    "$HELIX_CMD" --grammar build
 
     log_success "Helix grammars installed"
 else
-    log_warning "Helix not found. Install it first or run setup-dev-env.sh"
+    log_warning "Helix not found (tried 'hx' and 'helix'). Install it first or run setup-dev-env.sh"
 fi
 
 # ============================================================================
@@ -465,8 +474,8 @@ else
 fi
 echo "     - Check :Mason for installed tools"
 echo "     - Check :checkhealth for any issues"
-if command -v hx &> /dev/null; then
-    echo "  4. Open Helix: hx"
+if [ -n "$HELIX_CMD" ]; then
+    echo "  4. Open Helix: $HELIX_CMD"
     echo "     - Grammars should be installed"
 fi
 echo "  5. For C# projects, copy templates:"
@@ -547,7 +556,8 @@ fi
 echo ""
 
 if [ ! -d "$HOME/.config/helix/runtime/grammars" ]; then
-    log_warning "Helix grammars not found. Run: hx --grammar fetch && hx --grammar build"
+    local_hx="${HELIX_CMD:-hx}"
+    log_warning "Helix grammars not found. Run: $local_hx --grammar fetch && $local_hx --grammar build"
 fi
 
 if command -v claude &> /dev/null; then
