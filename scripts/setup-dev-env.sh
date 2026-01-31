@@ -224,10 +224,10 @@ esac
 # Install additional tools
 log_info "Installing additional tools..."
 case "$DISTRO" in
-    fedora)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find ;;
-    ubuntu)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find ;;
-    arch)     pkg_install "$DISTRO" git curl wget unzip ripgrep fd ;;
-    opensuse) pkg_install "$DISTRO" git curl wget unzip ripgrep fd ;;
+    fedora)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find rsync ;;
+    ubuntu)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find rsync ;;
+    arch)     pkg_install "$DISTRO" git curl wget unzip ripgrep fd rsync ;;
+    opensuse) pkg_install "$DISTRO" git curl wget unzip ripgrep fd rsync ;;
 esac
 
 # ============================================================================
