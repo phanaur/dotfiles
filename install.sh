@@ -20,6 +20,114 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# ============================================================================
+# Distro Detection (for install hints)
+# ============================================================================
+
+detect_distro() {
+    local distro=""
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        case "$ID" in
+            fedora)                          distro="fedora" ;;
+            ubuntu|debian|pop|linuxmint)     distro="ubuntu" ;;
+            arch|manjaro|endeavouros|garuda)  distro="arch" ;;
+            opensuse-tumbleweed|opensuse-leap|opensuse) distro="opensuse" ;;
+            *)
+                case "$ID_LIKE" in
+                    *fedora*|*rhel*)   distro="fedora" ;;
+                    *ubuntu*|*debian*) distro="ubuntu" ;;
+                    *arch*)            distro="arch" ;;
+                    *suse*)            distro="opensuse" ;;
+                esac
+                ;;
+        esac
+    fi
+    if [ -z "$distro" ]; then
+        if [ -f /etc/fedora-release ]; then distro="fedora"
+        elif [ -f /etc/debian_version ]; then distro="ubuntu"
+        elif [ -f /etc/arch-release ]; then distro="arch"
+        elif [ -f /etc/SuSE-release ]; then distro="opensuse"
+        else distro="unknown"
+        fi
+    fi
+    echo "$distro"
+}
+
+get_install_hint() {
+    local pkg="$1"
+    local distro="$2"
+    case "$pkg" in
+        dotnet)
+            case "$distro" in
+                fedora)   echo "sudo dnf install dotnet-sdk-10.0" ;;
+                ubuntu)   echo "sudo apt install dotnet-sdk-10.0 (requires Microsoft repo)" ;;
+                arch)     echo "sudo pacman -S dotnet-sdk" ;;
+                opensuse) echo "sudo zypper install dotnet-sdk-10.0 (requires Microsoft repo)" ;;
+                *)        echo "Install .NET SDK from https://dotnet.microsoft.com" ;;
+            esac ;;
+        golang)
+            case "$distro" in
+                fedora)   echo "sudo dnf install golang" ;;
+                ubuntu)   echo "sudo apt install golang-go" ;;
+                arch)     echo "sudo pacman -S go" ;;
+                opensuse) echo "sudo zypper install go" ;;
+                *)        echo "Install Go from https://go.dev" ;;
+            esac ;;
+        nodejs)
+            case "$distro" in
+                fedora)   echo "sudo dnf install nodejs npm" ;;
+                ubuntu)   echo "sudo apt install nodejs npm" ;;
+                arch)     echo "sudo pacman -S nodejs npm" ;;
+                opensuse) echo "sudo zypper install nodejs npm" ;;
+                *)        echo "Install Node.js from https://nodejs.org" ;;
+            esac ;;
+        python)
+            case "$distro" in
+                fedora)   echo "sudo dnf install python3 python3-pip" ;;
+                ubuntu)   echo "sudo apt install python3 python3-pip" ;;
+                arch)     echo "sudo pacman -S python python-pip" ;;
+                opensuse) echo "sudo zypper install python3 python3-pip" ;;
+                *)        echo "Install Python from https://python.org" ;;
+            esac ;;
+        gcc)
+            case "$distro" in
+                fedora)   echo "sudo dnf install gcc gcc-c++" ;;
+                ubuntu)   echo "sudo apt install gcc g++" ;;
+                arch)     echo "sudo pacman -S gcc" ;;
+                opensuse) echo "sudo zypper install gcc gcc-c++" ;;
+                *)        echo "Install GCC via your package manager" ;;
+            esac ;;
+        clang)
+            case "$distro" in
+                fedora)   echo "sudo dnf install clang clang-tools-extra" ;;
+                ubuntu)   echo "sudo apt install clang clang-tools" ;;
+                arch)     echo "sudo pacman -S clang" ;;
+                opensuse) echo "sudo zypper install clang clang-tools" ;;
+                *)        echo "Install Clang via your package manager" ;;
+            esac ;;
+        clangd)
+            case "$distro" in
+                fedora)   echo "sudo dnf install clang-tools-extra" ;;
+                ubuntu)   echo "sudo apt install clang-tools" ;;
+                arch)     echo "sudo pacman -S clang" ;;
+                opensuse) echo "sudo zypper install clang-tools" ;;
+                *)        echo "Install clangd via your package manager" ;;
+            esac ;;
+        clang-format)
+            case "$distro" in
+                fedora)   echo "sudo dnf install clang-tools-extra" ;;
+                ubuntu)   echo "sudo apt install clang-format" ;;
+                arch)     echo "sudo pacman -S clang" ;;
+                opensuse) echo "sudo zypper install clang-tools" ;;
+                *)        echo "Install clang-format via your package manager" ;;
+            esac ;;
+    esac
+}
+
+DETECTED_DISTRO=$(detect_distro)
+
 echo "==================================================================="
 echo "Dotfiles Installation"
 echo "==================================================================="
@@ -394,13 +502,13 @@ check_tool() {
 }
 
 echo "  SDKs and compilers:"
-check_tool "dotnet" "dotnet" "C#" "Run: sudo dnf install dotnet-sdk-10.0"
-check_tool "go" "go" "Go" "Run: sudo dnf install golang"
+check_tool "dotnet" "dotnet" "C#" "Run: $(get_install_hint dotnet "$DETECTED_DISTRO")"
+check_tool "go" "go" "Go" "Run: $(get_install_hint golang "$DETECTED_DISTRO")"
 check_tool "rustc" "rustc" "Rust" "Run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-check_tool "node" "node" "JS/TS" "Run: sudo dnf install nodejs npm"
-check_tool "python3" "python3" "Python" "Run: sudo dnf install python3 python3-pip"
-check_tool "gcc" "gcc" "C/C++" "Run: sudo dnf install gcc gcc-c++"
-check_tool "clang" "clang" "C/C++" "Run: sudo dnf install clang clang-tools-extra"
+check_tool "node" "node" "JS/TS" "Run: $(get_install_hint nodejs "$DETECTED_DISTRO")"
+check_tool "python3" "python3" "Python" "Run: $(get_install_hint python "$DETECTED_DISTRO")"
+check_tool "gcc" "gcc" "C/C++" "Run: $(get_install_hint gcc "$DETECTED_DISTRO")"
+check_tool "clang" "clang" "C/C++" "Run: $(get_install_hint clang "$DETECTED_DISTRO")"
 echo ""
 
 echo "  Language servers:"
@@ -413,7 +521,7 @@ check_tool "yaml-language-server" "yaml-language-server" "YAML" "Run: sudo npm i
 check_tool "vscode-json-ls" "vscode-json-language-server" "JSON" "Run: sudo npm install -g vscode-langservers-extracted"
 check_tool "taplo" "taplo" "TOML" "Run: cargo install taplo-cli --locked"
 check_tool "marksman" "marksman" "Markdown" "Install from https://github.com/artempyanykh/marksman/releases"
-check_tool "clangd" "clangd" "C/C++" "Run: sudo dnf install clang-tools-extra"
+check_tool "clangd" "clangd" "C/C++" "Run: $(get_install_hint clangd "$DETECTED_DISTRO")"
 echo ""
 
 echo "  Formatters:"
@@ -422,7 +530,7 @@ check_tool "prettier" "prettier" "JS/TS/YAML/HTML/CSS/MD" "Run: sudo npm install
 check_tool "black" "black" "Python" "Run: pip3 install --user black"
 check_tool "rustfmt" "rustfmt" "Rust" "Run: rustup component add rustfmt"
 check_tool "goimports" "goimports" "Go" "Run: go install golang.org/x/tools/cmd/goimports@latest"
-check_tool "clang-format" "clang-format" "C/C++" "Run: sudo dnf install clang-tools-extra"
+check_tool "clang-format" "clang-format" "C/C++" "Run: $(get_install_hint clang-format "$DETECTED_DISTRO")"
 echo ""
 
 echo "  Debuggers:"

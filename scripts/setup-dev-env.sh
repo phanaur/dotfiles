@@ -1,6 +1,7 @@
 #!/bin/bash
 # ============================================================================
-# Setup Development Environment for Fedora 43
+# Setup Development Environment (Multi-Distro)
+# Supports: Fedora, Ubuntu/Debian, Arch Linux, OpenSUSE
 # Configures LazyVim + Helix with all language servers and modern features
 # ============================================================================
 
@@ -30,13 +31,99 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running on Fedora
-if [ ! -f /etc/fedora-release ]; then
-    log_error "This script is designed for Fedora. Exiting."
-    exit 1
-fi
+# ============================================================================
+# Distro Detection and Package Management
+# ============================================================================
 
-log_info "Starting development environment setup for Fedora 43..."
+detect_distro() {
+    local distro=""
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        case "$ID" in
+            fedora)                          distro="fedora" ;;
+            ubuntu|debian|pop|linuxmint)     distro="ubuntu" ;;
+            arch|manjaro|endeavouros|garuda)  distro="arch" ;;
+            opensuse-tumbleweed|opensuse-leap|opensuse) distro="opensuse" ;;
+            *)
+                # Fallback to ID_LIKE for derivatives
+                case "$ID_LIKE" in
+                    *fedora*|*rhel*)   distro="fedora" ;;
+                    *ubuntu*|*debian*) distro="ubuntu" ;;
+                    *arch*)            distro="arch" ;;
+                    *suse*)            distro="opensuse" ;;
+                esac
+                ;;
+        esac
+    fi
+
+    # Legacy fallback
+    if [ -z "$distro" ]; then
+        if [ -f /etc/fedora-release ]; then distro="fedora"
+        elif [ -f /etc/debian_version ]; then distro="ubuntu"
+        elif [ -f /etc/arch-release ]; then distro="arch"
+        elif [ -f /etc/SuSE-release ]; then distro="opensuse"
+        fi
+    fi
+
+    if [ -z "$distro" ]; then
+        log_error "Unsupported distribution. Supported: Fedora, Ubuntu/Debian, Arch, OpenSUSE."
+        exit 1
+    fi
+
+    echo "$distro"
+}
+
+pkg_update() {
+    local distro="$1"
+    case "$distro" in
+        fedora)   sudo dnf update -y ;;
+        ubuntu)   sudo apt update && sudo apt upgrade -y ;;
+        arch)     sudo pacman -Syu --noconfirm ;;
+        opensuse) sudo zypper refresh && sudo zypper update -y ;;
+    esac
+}
+
+pkg_install() {
+    local distro="$1"
+    shift
+    case "$distro" in
+        fedora)   sudo dnf install -y "$@" ;;
+        ubuntu)   sudo apt install -y "$@" ;;
+        arch)     sudo pacman -S --noconfirm --needed "$@" ;;
+        opensuse) sudo zypper install -y "$@" ;;
+    esac
+}
+
+setup_dotnet_repo() {
+    local distro="$1"
+    case "$distro" in
+        ubuntu)
+            if ! apt-cache policy 2>/dev/null | grep -q "packages.microsoft.com"; then
+                log_info "Adding Microsoft package repository for .NET..."
+                sudo apt install -y wget apt-transport-https
+                wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
+                sudo dpkg -i /tmp/packages-microsoft-prod.deb
+                rm -f /tmp/packages-microsoft-prod.deb
+                sudo apt update
+            fi
+            ;;
+        opensuse)
+            if ! zypper repos 2>/dev/null | grep -q "packages-microsoft-com-prod"; then
+                log_info "Adding Microsoft package repository for .NET..."
+                sudo zypper install -y libicu
+                sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+                sudo zypper addrepo https://packages.microsoft.com/opensuse/15/prod packages-microsoft-com-prod
+                sudo zypper refresh
+            fi
+            ;;
+    esac
+}
+
+# Detect distribution
+DISTRO=$(detect_distro)
+log_info "Detected distribution: $DISTRO"
+log_info "Starting development environment setup..."
 
 # ============================================================================
 # 1. System Package Installation
@@ -45,20 +132,37 @@ log_info "Starting development environment setup for Fedora 43..."
 log_info "Installing system packages..."
 
 # Update system
-sudo dnf update -y
+pkg_update "$DISTRO"
 
 # Install Neovim (latest stable)
 log_info "Installing Neovim..."
-sudo dnf install -y neovim
+pkg_install "$DISTRO" neovim
 
 # Install Helix
 log_info "Installing Helix..."
-sudo dnf install -y helix
+case "$DISTRO" in
+    ubuntu)
+        if command -v snap &> /dev/null; then
+            sudo snap install helix --classic
+        else
+            log_warning "snap not found. Install snapd first, then: sudo snap install helix --classic"
+        fi
+        ;;
+    *)
+        pkg_install "$DISTRO" helix
+        ;;
+esac
 
 # Install .NET SDK 10
 log_info "Installing .NET SDK 10..."
 if ! command -v dotnet &> /dev/null; then
-    sudo dnf install -y dotnet-sdk-10.0
+    setup_dotnet_repo "$DISTRO"
+    case "$DISTRO" in
+        fedora)   pkg_install "$DISTRO" dotnet-sdk-10.0 ;;
+        ubuntu)   pkg_install "$DISTRO" dotnet-sdk-10.0 ;;
+        arch)     pkg_install "$DISTRO" dotnet-sdk ;;
+        opensuse) pkg_install "$DISTRO" dotnet-sdk-10.0 ;;
+    esac
 else
     log_success ".NET SDK already installed: $(dotnet --version)"
 fi
@@ -66,7 +170,12 @@ fi
 # Install Go
 log_info "Installing Go..."
 if ! command -v go &> /dev/null; then
-    sudo dnf install -y golang
+    case "$DISTRO" in
+        fedora)   pkg_install "$DISTRO" golang ;;
+        ubuntu)   pkg_install "$DISTRO" golang-go ;;
+        arch)     pkg_install "$DISTRO" go ;;
+        opensuse) pkg_install "$DISTRO" go ;;
+    esac
 else
     log_success "Go already installed: $(go version)"
 fi
@@ -94,19 +203,32 @@ rustup component add rustfmt clippy rust-analyzer
 
 # Install Node.js and npm
 log_info "Installing Node.js and npm..."
-sudo dnf install -y nodejs npm
+pkg_install "$DISTRO" nodejs npm
 
 # Install Python and pip
 log_info "Installing Python..."
-sudo dnf install -y python3 python3-pip
+case "$DISTRO" in
+    arch) pkg_install "$DISTRO" python python-pip ;;
+    *)    pkg_install "$DISTRO" python3 python3-pip ;;
+esac
 
 # Install build tools
 log_info "Installing build tools..."
-sudo dnf install -y gcc gcc-c++ clang clang-tools-extra make cmake
+case "$DISTRO" in
+    fedora)   pkg_install "$DISTRO" gcc gcc-c++ clang clang-tools-extra make cmake ;;
+    ubuntu)   pkg_install "$DISTRO" gcc g++ clang clang-tools make cmake ;;
+    arch)     pkg_install "$DISTRO" gcc clang make cmake ;;
+    opensuse) pkg_install "$DISTRO" gcc gcc-c++ clang clang-tools make cmake ;;
+esac
 
 # Install additional tools
 log_info "Installing additional tools..."
-sudo dnf install -y git curl wget unzip ripgrep fd-find
+case "$DISTRO" in
+    fedora)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find ;;
+    ubuntu)   pkg_install "$DISTRO" git curl wget unzip ripgrep fd-find ;;
+    arch)     pkg_install "$DISTRO" git curl wget unzip ripgrep fd ;;
+    opensuse) pkg_install "$DISTRO" git curl wget unzip ripgrep fd ;;
+esac
 
 # ============================================================================
 # 2. Language Servers and Formatters Installation

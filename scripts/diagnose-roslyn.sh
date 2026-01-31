@@ -46,7 +46,11 @@ if command -v dotnet &> /dev/null; then
     fi
 else
     echo -e "${RED}✗ .NET SDK not found!${NC}"
-    echo "  Install: sudo dnf install -y dotnet-sdk-10.0"
+    echo "  Install .NET SDK:"
+    echo "    Fedora:       sudo dnf install -y dotnet-sdk-10.0"
+    echo "    Ubuntu/Debian: sudo apt install -y dotnet-sdk-10.0 (requires Microsoft repo)"
+    echo "    Arch:          sudo pacman -S dotnet-sdk"
+    echo "    OpenSUSE:      sudo zypper install -y dotnet-sdk-10.0 (requires Microsoft repo)"
 fi
 echo ""
 
