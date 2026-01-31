@@ -27,7 +27,6 @@ Este script configura automáticamente Neovim (LazyVim) y Helix con todas las he
 
 ### 3. Configura Neovim (LazyVim):
 - ✅ Añade "extras" de LazyVim para cada lenguaje
-- ✅ **Auto-save** activado (guarda después de 1 segundo)
 - ✅ **Diagnósticos mejorados** (ventanas flotantes automáticas al 0.5s)
 - ✅ **Notificaciones más largas** (5 segundos en lugar de 2)
 - ✅ **Trouble.nvim** para ver todos los errores
@@ -36,7 +35,6 @@ Este script configura automáticamente Neovim (LazyVim) y Helix con todas las he
 - ✅ NO toca tu configuración de Helix
 
 ### 4. Configura Helix:
-- ✅ **Auto-save** activado (guarda después de 1 segundo)
 - ✅ **OmniSharp LSP** para C# (compartido con Neovim via Mason)
 - ✅ **Symlink de OmniSharp** creado en ~/.local/bin
 - ✅ Actualiza languages.toml para usar OmniSharp
@@ -83,11 +81,6 @@ El script pedirá contraseña de sudo para instalar paquetes del sistema.
 
 ### Neovim (LazyVim)
 
-#### Auto-save:
-- Guarda automáticamente después de 1 segundo sin escribir
-- Guarda al cambiar de buffer o perder foco
-- Toggle: `Espacio + u + a`
-
 #### Diagnósticos mejorados:
 - Ventanas flotantes **aparecen automáticamente** al 0.5s
 - Ver todos los errores: `Espacio + x + x`
@@ -106,10 +99,6 @@ El script pedirá contraseña de sudo para instalar paquetes del sistema.
 - Refactoring avanzado
 
 ### Helix
-
-#### Auto-save:
-- Guarda automáticamente después de 1 segundo sin escribir
-- Configurado en `~/.config/helix/config.toml`
 
 #### C# con OmniSharp:
 - Compartido con Neovim (via Mason)
@@ -155,7 +144,6 @@ Las plantillas `.editorconfig` y `omnisharp.json` configuran:
 │   └── plugins/
 │       ├── languages.lua         (nuevo)
 │       ├── csharp-roslyn.lua     (mantiene tu config de Roslyn)
-│       ├── autosave.lua          (nuevo)
 │       ├── diagnostics.lua       (nuevo)
 │       └── notifications.lua     (nuevo)
 ```
@@ -163,7 +151,7 @@ Las plantillas `.editorconfig` y `omnisharp.json` configuran:
 ### Helix:
 ```
 ~/.config/helix/
-├── config.toml                   (actualizado con auto-save)
+├── config.toml                   (configuración del editor)
 └── languages.toml                (actualizado para usar OmniSharp)
 ```
 
@@ -246,19 +234,6 @@ nvim
 # Buscar omnisharp y presionar 'i'
 ```
 
-### Auto-save no funciona
-**Neovim:**
-```vim
-:ASToggle         " Toggle auto-save
-```
-
-**Helix:**
-Verificar en `~/.config/helix/config.toml`:
-```toml
-[editor]
-auto-save = true
-```
-
 ### Roslyn no funciona
 - Verifica estar en directorio con `.csproj` o `.sln`
 - Primera conexión tarda 1-2 minutos
@@ -274,7 +249,6 @@ auto-save = true
 
 | Característica | Antes | Después |
 |---------------|-------|---------|
-| **Auto-save** | ❌ No | ✅ Sí (ambos editores) |
 | **Diagnósticos** | Línea única | Ventanas flotantes automáticas |
 | **Notificaciones** | 2 segundos | 5 segundos + historial |
 | **C# (Neovim)** | - | Roslyn (oficial) |
@@ -303,8 +277,6 @@ Después de ejecutar el script, encontrarás estas guías en tu home:
 
 - `DIAGNOSTICOS.md` - Guía de diagnósticos mejorados
 - `NOTIFICACIONES.md` - Guía de notificaciones
-- `AUTOGUARDADO.md` - Guía de auto-save (Neovim)
-- `HELIX-AUTOSAVE.md` - Guía de auto-save (Helix)
 - `HELIX-OMNISHARP.md` - Guía de OmniSharp en Helix
 - `OMNISHARP-CONFIG.md` - Configuración de C# 12+
 
@@ -314,14 +286,12 @@ Después de ejecutar el script tendrás:
 
 **Neovim:**
 - 🚀 LazyVim completamente configurado
-- 📝 Auto-save (1s)
 - 🔍 Diagnósticos con ventanas automáticas (0.5s)
 - 📢 Notificaciones largas (5s) con historial
 - 🎯 Roslyn LSP para C# 12+
 - 🌈 Soporte para 11 lenguajes
 
 **Helix:**
-- 📝 Auto-save (1s)
 - 🎯 OmniSharp LSP para C# 12+
 - 🔗 Compartido con Neovim (via Mason)
 - ⚙️ Respeta .editorconfig

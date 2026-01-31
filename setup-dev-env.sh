@@ -221,39 +221,6 @@ return {
 }
 EOF
 
-# Create auto-save configuration
-log_info "Creating auto-save configuration..."
-cat > "$NVIM_PLUGINS_DIR/autosave.lua" << 'EOF'
--- Auto-save Configuration
-return {
-  {
-    "okuuva/auto-save.nvim",
-    event = { "InsertLeave", "TextChanged" },
-    opts = {
-      enabled = true,
-      trigger_events = {
-        immediate_save = { "BufLeave", "FocusLost" },
-        defer_save = { "InsertLeave", "TextChanged" },
-        cancel_deferred_save = { "InsertEnter" },
-      },
-      condition = function(buf)
-        local fn = vim.fn
-        local utils = require("auto-save.utils.data")
-        if fn.getbufvar(buf, "&modifiable") == 1 and utils.not_in(fn.getbufvar(buf, "&filetype"), {}) then
-          return true
-        end
-        return false
-      end,
-      write_all_buffers = false,
-      debounce_delay = 1000,
-    },
-    keys = {
-      { "<leader>ua", "<cmd>ASToggle<cr>", desc = "Toggle Auto-save" },
-    },
-  },
-}
-EOF
-
 # Create diagnostics configuration
 log_info "Creating diagnostics configuration..."
 cat > "$NVIM_PLUGINS_DIR/diagnostics.lua" << 'EOF'
@@ -374,7 +341,57 @@ return {
 }
 EOF
 
-log_success "LazyVim configuration files created"
+# Create C# Roslyn LSP configuration
+cat > "$NVIM_PLUGINS_DIR/csharp-roslyn.lua" << 'EOF'
+-- Configuración de Roslyn LSP (oficial de Microsoft)
+return {
+  -- Deshabilitar OmniSharp en Neovim (se usa en Helix)
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        omnisharp = false,
+      },
+    },
+  },
+
+  -- Roslyn LSP (oficial de Microsoft para C#)
+  {
+    "seblj/roslyn.nvim",
+    ft = "cs",
+    config = function()
+      require("roslyn").setup({
+        config = {
+          settings = {
+            ["csharp|background_analysis"] = {
+              dotnet_analyzer_diagnostics_scope = "fullSolution",
+              dotnet_compiler_diagnostics_scope = "fullSolution",
+            },
+            ["csharp|code_lens"] = {
+              dotnet_enable_references_code_lens = true,
+            },
+            ["csharp|inlay_hints"] = {
+              csharp_enable_inlay_hints_for_implicit_variable_types = true,
+              csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+              csharp_enable_inlay_hints_for_types = true,
+              dotnet_enable_inlay_hints_for_parameters = true,
+              dotnet_enable_inlay_hints_for_literal_parameters = true,
+              dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+              dotnet_enable_inlay_hints_for_indexer_parameters = true,
+              dotnet_enable_inlay_hints_for_other_parameters = true,
+              dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = false,
+              dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = false,
+            },
+          },
+        },
+      })
+    end,
+  },
+}
+EOF
+
+log_success "LazyVim configuration files created (including Roslyn LSP for C#)"
 
 # ============================================================================
 # 4. Helix Configuration
@@ -387,41 +404,6 @@ HELIX_CONFIG_FILE="$HELIX_CONFIG_DIR/config.toml"
 HELIX_LANGUAGES_FILE="$HELIX_CONFIG_DIR/languages.toml"
 
 mkdir -p "$HELIX_CONFIG_DIR"
-
-# Configure auto-save in Helix
-if [ -f "$HELIX_CONFIG_FILE" ]; then
-    # Check if auto-save is already configured
-    if ! grep -q "auto-save" "$HELIX_CONFIG_FILE"; then
-        cp "$HELIX_CONFIG_FILE" "$HELIX_CONFIG_FILE.backup.$(date +%Y%m%d_%H%M%S)"
-        # Add auto-save to [editor] section
-        if grep -q "^\[editor\]" "$HELIX_CONFIG_FILE"; then
-            sed -i '/^\[editor\]/a auto-save = true\nidle-timeout = 1000  # Auto-save after 1 second' "$HELIX_CONFIG_FILE"
-        else
-            echo -e "\n[editor]\nauto-save = true\nidle-timeout = 1000" >> "$HELIX_CONFIG_FILE"
-        fi
-        log_success "Auto-save configured in Helix"
-    else
-        log_success "Auto-save already configured in Helix"
-    fi
-else
-    # Create new config file
-    cat > "$HELIX_CONFIG_FILE" << 'EOF'
-[editor]
-auto-save = true
-idle-timeout = 1000
-line-number = "relative"
-indent-guides.render = true
-
-[editor.lsp]
-display-messages = true
-display-inlay-hints = true
-
-[editor.inline-diagnostics]
-cursor-line = "hint"
-other-lines = "error"
-EOF
-    log_success "Helix config.toml created"
-fi
 
 # Update Helix languages.toml to use OmniSharp for C#
 if [ -f "$HELIX_LANGUAGES_FILE" ]; then
@@ -439,12 +421,37 @@ fi
 # ============================================================================
 
 log_info "Installing Mason packages (including OmniSharp)..."
+log_info "This may take several minutes, especially for OmniSharp (~100MB)..."
 
 cat > /tmp/install_mason_packages.lua << 'EOF'
-vim.cmd("Lazy! sync")
+-- Sync Lazy plugins first
+print("Starting Lazy plugin sync...")
+
+local lazy_ok, lazy = pcall(require, "lazy")
+if not lazy_ok then
+  print("✗ Failed to load Lazy")
+  vim.cmd("qa!")
+  return
+end
+
+local manage_ok, manage = pcall(require, "lazy.manage")
+if manage_ok then
+  print("✓ Starting Lazy sync...")
+  manage.sync({
+    wait = true,
+    show = false,
+  })
+else
+  print("✗ Failed to load lazy.manage")
+end
+
+-- Wait for Lazy sync to complete before installing Mason packages
+-- Increased delay to allow plugin sync to finish
 vim.defer_fn(function()
+  print("\n✓ Starting Mason package installation...")
+  -- Packages list
   local packages = {
-    "omnisharp",
+    "omnisharp",         -- For Helix (large, ~100MB)
     "csharpier",
     "netcoredbg",
     "rust-analyzer",
@@ -466,39 +473,123 @@ vim.defer_fn(function()
   registry.refresh()
 
   vim.defer_fn(function()
+    local total = #packages
+    local installed = 0
+    local failed = {}
+    local in_progress = {}
+
+    -- Install packages with progress tracking
     for _, package_name in ipairs(packages) do
       local ok, package = pcall(registry.get_package, package_name)
       if ok then
         if not package:is_installed() then
-          print("Installing " .. package_name .. "...")
-          package:install()
+          print(string.format("[%d/%d] Installing %s...", installed + 1, total, package_name))
+          in_progress[package_name] = true
+
+          package:install():once("closed", function()
+            in_progress[package_name] = nil
+            if package:is_installed() then
+              installed = installed + 1
+              print(string.format("✓ %s installed successfully", package_name))
+            else
+              table.insert(failed, package_name)
+              print(string.format("✗ %s installation failed", package_name))
+            end
+          end)
         else
-          print(package_name .. " already installed")
+          installed = installed + 1
+          print(string.format("✓ %s already installed", package_name))
         end
       else
-        print("Package not found: " .. package_name)
+        table.insert(failed, package_name)
+        print(string.format("✗ Package not found: %s", package_name))
       end
     end
 
+    -- Monitor installation progress and exit when done
+    local function check_completion()
+      local still_running = false
+      for pkg, _ in pairs(in_progress) do
+        still_running = true
+        break
+      end
+
+      if not still_running then
+        print("\n========================================")
+        print(string.format("Installation complete: %d/%d packages", installed, total))
+        if #failed > 0 then
+          print("Failed packages: " .. table.concat(failed, ", "))
+        end
+        print("========================================\n")
+        vim.cmd("qa!")
+      else
+        vim.defer_fn(check_completion, 2000)
+      end
+    end
+
+    -- Start checking after initial delay
+    vim.defer_fn(check_completion, 5000)
+
+    -- Safety timeout: 10 minutes (for large packages like OmniSharp)
     vim.defer_fn(function()
-      print("Mason installation complete!")
+      print("\n⚠ Timeout reached (10 minutes). Forcing exit.")
+      print("Some packages may still be installing in the background.")
       vim.cmd("qa!")
-    end, 60000)
-  end, 2000)
-end, 2000)
+    end, 600000)
+  end, 3000)
+end, 10000)  -- Wait 10 seconds for Lazy sync to complete
 EOF
 
-nvim --headless -c "luafile /tmp/install_mason_packages.lua" 2>&1 | grep -E "(Installing|installed|complete)" || true
+echo ""
+echo "Installing packages in headless mode..."
+echo "This may take 5-10 minutes for large packages like OmniSharp."
+echo ""
+
+nvim --headless -c "luafile /tmp/install_mason_packages.lua" 2>&1 &
+NVIM_PID=$!
+
+# Show progress indicator while nvim is running
+while kill -0 $NVIM_PID 2>/dev/null; do
+  echo -n "."
+  sleep 2
+done
+
+wait $NVIM_PID
+echo ""
+echo ""
+
 rm -f /tmp/install_mason_packages.lua
 
 # Create symlink for OmniSharp so Helix can use it
-log_info "Creating symlink for OmniSharp..."
+log_info "Creating symlink for OmniSharp (for Helix)..."
 mkdir -p ~/.local/bin
-if [ -f ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ]; then
-    ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp
-    log_success "OmniSharp symlink created for Helix"
-else
-    log_warning "OmniSharp not found in Mason packages. Install it manually with :Mason in Neovim"
+
+# Wait for OmniSharp to finish installing (with retries)
+OMNISHARP_PATH="$HOME/.local/share/nvim/mason/packages/omnisharp/OmniSharp"
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if [ -f "$OMNISHARP_PATH" ]; then
+        ln -sf "$OMNISHARP_PATH" "$HOME/.local/bin/omnisharp"
+        chmod +x "$HOME/.local/bin/omnisharp"
+        log_success "OmniSharp symlink created for Helix"
+        break
+    else
+        if [ $RETRY_COUNT -eq 0 ]; then
+            log_info "Waiting for OmniSharp to finish installing..."
+        fi
+        sleep 2
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+    fi
+done
+
+if [ ! -f "$OMNISHARP_PATH" ]; then
+    log_warning "OmniSharp not found after waiting. You may need to:"
+    log_warning "  1. Open Neovim: nvim"
+    log_warning "  2. Run: :Mason"
+    log_warning "  3. Install omnisharp manually"
+    log_warning "  4. Create symlink: ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp"
 fi
 
 # ============================================================================
@@ -658,7 +749,7 @@ echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
 echo "  ✓ Roslyn LSP for C# (Neovim)"
 echo "  ✓ OmniSharp LSP for C# (Helix)"
-echo "  ✓ Auto-save enabled (both editors)"
+echo "  ✓ Manual save mode (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
 echo "  ✓ Configuration templates created"

@@ -221,39 +221,6 @@ return {
 }
 EOF
 
-# Create auto-save configuration
-log_info "Creating auto-save configuration..."
-cat > "$NVIM_PLUGINS_DIR/autosave.lua" << 'EOF'
--- Auto-save Configuration
-return {
-  {
-    "okuuva/auto-save.nvim",
-    event = { "InsertLeave", "TextChanged" },
-    opts = {
-      enabled = true,
-      trigger_events = {
-        immediate_save = { "BufLeave", "FocusLost" },
-        defer_save = { "InsertLeave", "TextChanged" },
-        cancel_deferred_save = { "InsertEnter" },
-      },
-      condition = function(buf)
-        local fn = vim.fn
-        local utils = require("auto-save.utils.data")
-        if fn.getbufvar(buf, "&modifiable") == 1 and utils.not_in(fn.getbufvar(buf, "&filetype"), {}) then
-          return true
-        end
-        return false
-      end,
-      write_all_buffers = false,
-      debounce_delay = 1000,
-    },
-    keys = {
-      { "<leader>ua", "<cmd>ASToggle<cr>", desc = "Toggle Auto-save" },
-    },
-  },
-}
-EOF
-
 # Create diagnostics configuration
 log_info "Creating diagnostics configuration..."
 cat > "$NVIM_PLUGINS_DIR/diagnostics.lua" << 'EOF'
@@ -437,41 +404,6 @@ HELIX_CONFIG_FILE="$HELIX_CONFIG_DIR/config.toml"
 HELIX_LANGUAGES_FILE="$HELIX_CONFIG_DIR/languages.toml"
 
 mkdir -p "$HELIX_CONFIG_DIR"
-
-# Configure auto-save in Helix
-if [ -f "$HELIX_CONFIG_FILE" ]; then
-    # Check if auto-save is already configured
-    if ! grep -q "auto-save" "$HELIX_CONFIG_FILE"; then
-        cp "$HELIX_CONFIG_FILE" "$HELIX_CONFIG_FILE.backup.$(date +%Y%m%d_%H%M%S)"
-        # Add auto-save to [editor] section
-        if grep -q "^\[editor\]" "$HELIX_CONFIG_FILE"; then
-            sed -i '/^\[editor\]/a auto-save = true\nidle-timeout = 1000  # Auto-save after 1 second' "$HELIX_CONFIG_FILE"
-        else
-            echo -e "\n[editor]\nauto-save = true\nidle-timeout = 1000" >> "$HELIX_CONFIG_FILE"
-        fi
-        log_success "Auto-save configured in Helix"
-    else
-        log_success "Auto-save already configured in Helix"
-    fi
-else
-    # Create new config file
-    cat > "$HELIX_CONFIG_FILE" << 'EOF'
-[editor]
-auto-save = true
-idle-timeout = 1000
-line-number = "relative"
-indent-guides.render = true
-
-[editor.lsp]
-display-messages = true
-display-inlay-hints = true
-
-[editor.inline-diagnostics]
-cursor-line = "hint"
-other-lines = "error"
-EOF
-    log_success "Helix config.toml created"
-fi
 
 # Update Helix languages.toml to use OmniSharp for C#
 if [ -f "$HELIX_LANGUAGES_FILE" ]; then
@@ -817,7 +749,7 @@ echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
 echo "  ✓ Roslyn LSP for C# (Neovim)"
 echo "  ✓ OmniSharp LSP for C# (Helix)"
-echo "  ✓ Auto-save enabled (both editors)"
+echo "  ✓ Manual save mode (both editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
 echo "  ✓ Configuration templates created"

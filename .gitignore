@@ -2,8 +2,10 @@
 # .gitignore para dotfiles
 # ============================================================================
 
-# Helix - NO sincronizar runtime (se genera automáticamente)
-helix/runtime/
+# Helix - NO sincronizar runtime generado (grammars, themes descargados)
+helix/runtime/*
+# Sí sincronizar queries personalizadas (indent, etc.)
+!helix/runtime/queries/
 
 # Neovim - NO sincronizar archivos generados
 nvim/lazy-lock.json

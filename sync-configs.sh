@@ -95,7 +95,7 @@ fi
 echo "[5/6] Syncing documentation..."
 
 # Copy all markdown guides
-for doc in DIAGNOSTICOS NOTIFICACIONES AUTOGUARDADO HELIX-AUTOSAVE HELIX-OMNISHARP OMNISHARP-CONFIG GUIA-CSHARP SETUP-README; do
+for doc in DIAGNOSTICOS NOTIFICACIONES HELIX-OMNISHARP OMNISHARP-CONFIG GUIA-CSHARP SETUP-README; do
     if [ -f "$HOME/${doc}.md" ]; then
         cp "$HOME/${doc}.md" "$DOTFILES_DIR/docs/"
         echo "  ✓ ${doc}.md synced"

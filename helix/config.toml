@@ -3,8 +3,6 @@ theme = "synthwave84"
 [editor]
 line-number = "relative"
 indent-guides.render = true
-auto-save = true
-idle-timeout = 1000  # Auto-guarda después de 1 segundo sin escribir (en milisegundos)
 
 [editor.cursor-shape]
 insert = "bar"           # Línea vertical en modo insert

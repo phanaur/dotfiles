@@ -29,7 +29,6 @@ dotfiles/
 │   │       ├── languages.lua      ← SINCRONIZAR
 │   │       ├── csharp-roslyn.lua  ← SINCRONIZAR
 │   │       ├── go.lua              ← SINCRONIZAR
-│   │       ├── autosave.lua       ← SINCRONIZAR
 │   │       ├── diagnostics.lua    ← SINCRONIZAR
 │   │       └── notifications.lua  ← SINCRONIZAR
 │   └── init.lua                   ← SINCRONIZAR
@@ -50,8 +49,6 @@ dotfiles/
 ├── docs/                           # Documentación
 │   ├── DIAGNOSTICOS.md            ← SINCRONIZAR
 │   ├── NOTIFICACIONES.md          ← SINCRONIZAR
-│   ├── AUTOGUARDADO.md            ← SINCRONIZAR
-│   ├── HELIX-AUTOSAVE.md          ← SINCRONIZAR
 │   ├── HELIX-OMNISHARP.md         ← SINCRONIZAR
 │   ├── OMNISHARP-CONFIG.md        ← SINCRONIZAR
 │   └── GUIA-CSHARP.md             ← SINCRONIZAR
@@ -123,7 +120,6 @@ nvim
 ## 🔧 Configuración Incluida
 
 ### Neovim (LazyVim):
-- ✅ **Auto-save** (1 segundo)
 - ✅ **Roslyn LSP** para C# 12+
 - ✅ **gopls** para Go con inlay hints completos
 - ✅ **go.nvim** plugin con herramientas integradas
@@ -140,8 +136,9 @@ nvim
 - ✅ Terminal split integrado
 
 ### Helix:
-- ✅ **Auto-save** (1 segundo)
 - ✅ **OmniSharp LSP** para C# 12+
+- ✅ **csharpier** (formatter) y **netcoredbg** (debugger)
+- ✅ **Indent queries** personalizadas para C#
 - ✅ **gopls** para Go con análisis estático
 - ✅ **Tema personalizado** (synthwave84)
 - ✅ **Inlay hints** activados
@@ -295,7 +292,6 @@ nvim
 Toda la documentación está en la carpeta `docs/`:
 - Diagnósticos mejorados
 - Notificaciones
-- Auto-save (Neovim y Helix)
 - Configuración de C# 12+
 - Y más...
 

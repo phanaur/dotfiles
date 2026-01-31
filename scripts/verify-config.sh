@@ -30,7 +30,6 @@ echo ""
 declare -A FILES=(
     ["$PLUGINS_DIR/languages.lua"]="Multi-language support"
     ["$PLUGINS_DIR/csharp-roslyn.lua"]="Roslyn LSP for C# (CRITICAL)"
-    ["$PLUGINS_DIR/autosave.lua"]="Auto-save functionality"
     ["$PLUGINS_DIR/diagnostics.lua"]="Enhanced diagnostics"
     ["$PLUGINS_DIR/notifications.lua"]="Notification settings"
 )

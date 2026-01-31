@@ -15,7 +15,7 @@ auto-format = true
 
 [language-server.omnisharp]
 command = "omnisharp"
-args = ["--languageserver"]
+args = ["--languageserver", "--encoding", "utf-8", "--loglevel", "warning"]
 
 [language.debugger]
 name = "netcoredbg"

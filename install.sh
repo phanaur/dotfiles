@@ -231,7 +231,72 @@ else
 fi
 
 # ============================================================================
-# 7. Copy Templates
+# 7. Install C# Tools (OmniSharp symlink, csharpier, netcoredbg)
+# ============================================================================
+
+log_info "Setting up C# development tools..."
+
+mkdir -p "$HOME/.local/bin"
+
+# OmniSharp symlink for Helix (Mason installs it for Neovim only)
+OMNISHARP_MASON="$HOME/.local/share/nvim/mason/packages/omnisharp/OmniSharp"
+if [ -f "$OMNISHARP_MASON" ]; then
+    ln -sf "$OMNISHARP_MASON" "$HOME/.local/bin/omnisharp"
+    log_success "OmniSharp symlinked to ~/.local/bin/omnisharp"
+else
+    log_warning "OmniSharp not found in Mason. Run :MasonInstall omnisharp in Neovim first, then re-run this script."
+fi
+
+# csharpier (C# formatter)
+if command -v dotnet &> /dev/null; then
+    if ! command -v dotnet-csharpier &> /dev/null && ! dotnet tool list -g 2>/dev/null | grep -q csharpier; then
+        read -p "Install csharpier (C# formatter)? [Y/n] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            dotnet tool install -g csharpier && \
+                log_success "csharpier installed" || \
+                log_error "Failed to install csharpier"
+        fi
+    else
+        log_success "csharpier already installed"
+    fi
+
+    # netcoredbg (.NET debugger)
+    if ! command -v netcoredbg &> /dev/null; then
+        read -p "Install netcoredbg (.NET debugger for Helix/Neovim)? [Y/n] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            log_info "Installing netcoredbg..."
+            NETCOREDBG_VERSION="$(curl -fsSL https://api.github.com/repos/Samsung/netcoredbg/releases/latest | grep -Po '"tag_name": "\K[^"]+' 2>/dev/null || echo "3.1.3-1062")"
+            log_info "Using netcoredbg version: $NETCOREDBG_VERSION"
+            ARCH="$(uname -m)"
+            case "$ARCH" in
+                x86_64) NETCOREDBG_ARCH="linux-amd64" ;;
+                aarch64) NETCOREDBG_ARCH="linux-arm64" ;;
+                *) log_error "Unsupported architecture: $ARCH"; NETCOREDBG_ARCH="" ;;
+            esac
+
+            if [ -n "$NETCOREDBG_ARCH" ]; then
+                NETCOREDBG_URL="https://github.com/Samsung/netcoredbg/releases/download/${NETCOREDBG_VERSION}/netcoredbg-${NETCOREDBG_ARCH}.tar.gz"
+                NETCOREDBG_DIR="$HOME/.local/share/netcoredbg"
+                mkdir -p "$NETCOREDBG_DIR"
+                if curl -fsSL "$NETCOREDBG_URL" | tar xz -C "$NETCOREDBG_DIR" --strip-components=1; then
+                    ln -sf "$NETCOREDBG_DIR/netcoredbg" "$HOME/.local/bin/netcoredbg"
+                    log_success "netcoredbg installed to $NETCOREDBG_DIR"
+                else
+                    log_error "Failed to download netcoredbg. Install manually from https://github.com/Samsung/netcoredbg/releases"
+                fi
+            fi
+        fi
+    else
+        log_success "netcoredbg already installed: $(netcoredbg --version 2>&1 | head -1)"
+    fi
+else
+    log_warning ".NET SDK not found. Skipping C# tools installation."
+fi
+
+# ============================================================================
+# 8. Copy Templates
 # ============================================================================
 
 log_info "Setting up templates..."
@@ -248,7 +313,7 @@ if [ -d "$DOTFILES_DIR/templates" ]; then
 fi
 
 # ============================================================================
-# 8. Verification
+# 9. Verification
 # ============================================================================
 
 echo ""
@@ -308,7 +373,19 @@ echo ""
 # Check for common issues
 echo "Checking configuration..."
 if [ ! -L "$HOME/.local/bin/omnisharp" ]; then
-    log_warning "OmniSharp symlink not found. Run :Mason in Neovim to install it."
+    log_warning "OmniSharp symlink not found. Run :MasonInstall omnisharp in Neovim, then re-run this script."
+fi
+
+if command -v csharpier &> /dev/null || dotnet tool list -g 2>/dev/null | grep -q csharpier; then
+    echo "  ✓ csharpier (C# formatter) installed"
+else
+    log_warning "csharpier not installed. Run: dotnet tool install -g csharpier"
+fi
+
+if command -v netcoredbg &> /dev/null; then
+    echo "  ✓ netcoredbg (.NET debugger) installed"
+else
+    log_warning "netcoredbg not installed. Re-run install.sh or install manually."
 fi
 
 if [ ! -d "$HOME/.config/helix/runtime/grammars" ]; then
