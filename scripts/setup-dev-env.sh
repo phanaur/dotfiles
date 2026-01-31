@@ -738,6 +738,14 @@ if [ ! -f "$OMNISHARP_PATH" ]; then
     log_warning "  4. Create symlink: ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp"
 fi
 
+# Install OmniSharp wrapper for Helix (filters invalid null messages)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WRAPPER_PATH="$SCRIPT_DIR/omnisharp-wrapper.sh"
+if [ -f "$WRAPPER_PATH" ]; then
+    ln -sf "$WRAPPER_PATH" "$HOME/.local/bin/omnisharp-wrapper"
+    log_success "OmniSharp wrapper symlinked to ~/.local/bin/omnisharp-wrapper"
+fi
+
 # ============================================================================
 # 6. EditorConfig and OmniSharp Configuration Templates
 # ============================================================================
