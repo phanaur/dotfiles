@@ -372,21 +372,71 @@ echo ""
 
 # Check for common issues
 echo "Checking configuration..."
-if [ ! -L "$HOME/.local/bin/omnisharp" ]; then
-    log_warning "OmniSharp symlink not found. Run :MasonInstall omnisharp in Neovim, then re-run this script."
+echo ""
+
+# --- Language tooling verification ---
+log_info "Verifying language tools (required by Helix and Neovim)..."
+echo ""
+
+MISSING_TOOLS=0
+
+check_tool() {
+    local name="$1"
+    local cmd="$2"
+    local lang="$3"
+    local fix="$4"
+    if command -v "$cmd" &> /dev/null; then
+        echo "  ✓ $name ($lang)"
+    else
+        log_warning "$name not found. $fix"
+        MISSING_TOOLS=$((MISSING_TOOLS + 1))
+    fi
+}
+
+echo "  SDKs and compilers:"
+check_tool "dotnet" "dotnet" "C#" "Run: sudo dnf install dotnet-sdk-10.0"
+check_tool "go" "go" "Go" "Run: sudo dnf install golang"
+check_tool "rustc" "rustc" "Rust" "Run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+check_tool "node" "node" "JS/TS" "Run: sudo dnf install nodejs npm"
+check_tool "python3" "python3" "Python" "Run: sudo dnf install python3 python3-pip"
+check_tool "gcc" "gcc" "C/C++" "Run: sudo dnf install gcc gcc-c++"
+check_tool "clang" "clang" "C/C++" "Run: sudo dnf install clang clang-tools-extra"
+echo ""
+
+echo "  Language servers:"
+check_tool "omnisharp" "omnisharp" "C#" "Run: ./install.sh (section 7) or ln -sf ~/.local/share/nvim/mason/packages/omnisharp/OmniSharp ~/.local/bin/omnisharp"
+check_tool "gopls" "gopls" "Go" "Run: go install golang.org/x/tools/gopls@latest"
+check_tool "rust-analyzer" "rust-analyzer" "Rust" "Run: rustup component add rust-analyzer"
+check_tool "pyright" "pyright-langserver" "Python" "Run: pip3 install --user pyright"
+check_tool "ts-language-server" "typescript-language-server" "JS/TS" "Run: sudo npm install -g typescript-language-server"
+check_tool "yaml-language-server" "yaml-language-server" "YAML" "Run: sudo npm install -g yaml-language-server"
+check_tool "vscode-json-ls" "vscode-json-language-server" "JSON" "Run: sudo npm install -g vscode-langservers-extracted"
+check_tool "taplo" "taplo" "TOML" "Run: cargo install taplo-cli --locked"
+check_tool "marksman" "marksman" "Markdown" "Install from https://github.com/artempyanykh/marksman/releases"
+check_tool "clangd" "clangd" "C/C++" "Run: sudo dnf install clang-tools-extra"
+echo ""
+
+echo "  Formatters:"
+check_tool "csharpier" "csharpier" "C#" "Run: dotnet tool install -g csharpier"
+check_tool "prettier" "prettier" "JS/TS/YAML/HTML/CSS/MD" "Run: sudo npm install -g prettier"
+check_tool "black" "black" "Python" "Run: pip3 install --user black"
+check_tool "rustfmt" "rustfmt" "Rust" "Run: rustup component add rustfmt"
+check_tool "goimports" "goimports" "Go" "Run: go install golang.org/x/tools/cmd/goimports@latest"
+check_tool "clang-format" "clang-format" "C/C++" "Run: sudo dnf install clang-tools-extra"
+echo ""
+
+echo "  Debuggers:"
+check_tool "netcoredbg" "netcoredbg" ".NET" "Re-run install.sh or download from https://github.com/Samsung/netcoredbg/releases"
+check_tool "delve" "dlv" "Go" "Run: go install github.com/go-delve/delve/cmd/dlv@latest"
+echo ""
+
+if [ $MISSING_TOOLS -gt 0 ]; then
+    log_warning "$MISSING_TOOLS tool(s) missing. Run scripts/setup-dev-env.sh for full installation."
+else
+    log_success "All language tools detected!"
 fi
 
-if command -v csharpier &> /dev/null || dotnet tool list -g 2>/dev/null | grep -q csharpier; then
-    echo "  ✓ csharpier (C# formatter) installed"
-else
-    log_warning "csharpier not installed. Run: dotnet tool install -g csharpier"
-fi
-
-if command -v netcoredbg &> /dev/null; then
-    echo "  ✓ netcoredbg (.NET debugger) installed"
-else
-    log_warning "netcoredbg not installed. Re-run install.sh or install manually."
-fi
+echo ""
 
 if [ ! -d "$HOME/.config/helix/runtime/grammars" ]; then
     log_warning "Helix grammars not found. Run: hx --grammar fetch && hx --grammar build"

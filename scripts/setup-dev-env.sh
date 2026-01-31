@@ -63,6 +63,22 @@ else
     log_success ".NET SDK already installed: $(dotnet --version)"
 fi
 
+# Install Go
+log_info "Installing Go..."
+if ! command -v go &> /dev/null; then
+    sudo dnf install -y golang
+else
+    log_success "Go already installed: $(go version)"
+fi
+
+# Install Go tools (gopls, goimports, delve)
+log_info "Installing Go tools (gopls, goimports, delve)..."
+if command -v go &> /dev/null; then
+    go install golang.org/x/tools/gopls@latest 2>/dev/null && log_success "gopls installed" || log_warning "Failed to install gopls"
+    go install golang.org/x/tools/cmd/goimports@latest 2>/dev/null && log_success "goimports installed" || log_warning "Failed to install goimports"
+    go install github.com/go-delve/delve/cmd/dlv@latest 2>/dev/null && log_success "delve debugger installed" || log_warning "Failed to install delve"
+fi
+
 # Install Rust
 log_info "Installing Rust toolchain..."
 if ! command -v rustc &> /dev/null; then
@@ -73,8 +89,8 @@ else
 fi
 
 # Install Rust tools
-log_info "Installing Rust tools (rustfmt, clippy)..."
-rustup component add rustfmt clippy
+log_info "Installing Rust tools (rustfmt, clippy, rust-analyzer)..."
+rustup component add rustfmt clippy rust-analyzer
 
 # Install Node.js and npm
 log_info "Installing Node.js and npm..."
@@ -712,11 +728,32 @@ else
     log_error ".NET SDK not found"
 fi
 
+# Check Go
+if command -v go &> /dev/null; then
+    log_success "Go: $(go version)"
+else
+    log_error "Go not found"
+fi
+
+# Check gopls
+if command -v gopls &> /dev/null; then
+    log_success "gopls: $(gopls version 2>&1 | head -1)"
+else
+    log_error "gopls not found"
+fi
+
 # Check Rust
 if command -v rustc &> /dev/null; then
     log_success "Rust: $(rustc --version)"
 else
     log_error "Rust not found"
+fi
+
+# Check rust-analyzer
+if command -v rust-analyzer &> /dev/null; then
+    log_success "rust-analyzer: available"
+else
+    log_error "rust-analyzer not found"
 fi
 
 # Check Node.js
