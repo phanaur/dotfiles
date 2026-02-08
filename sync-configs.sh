@@ -15,6 +15,7 @@ echo ""
 # Create directory structure
 mkdir -p "$DOTFILES_DIR/nvim"
 mkdir -p "$DOTFILES_DIR/helix"
+mkdir -p "$DOTFILES_DIR/fresh"
 mkdir -p "$DOTFILES_DIR/templates"
 mkdir -p "$DOTFILES_DIR/scripts"
 mkdir -p "$DOTFILES_DIR/docs"
@@ -23,7 +24,7 @@ mkdir -p "$DOTFILES_DIR/docs"
 # 1. Neovim Configuration
 # ============================================================================
 
-echo "[1/6] Syncing Neovim configuration..."
+echo "[1/7] Syncing Neovim configuration..."
 
 # Copy entire nvim config (excluding generated files)
 rsync -av --exclude='lazy-lock.json' \
@@ -38,7 +39,7 @@ echo "  ✓ Neovim config synced"
 # 2. Helix Configuration
 # ============================================================================
 
-echo "[2/6] Syncing Helix configuration..."
+echo "[2/7] Syncing Helix configuration..."
 
 # Copy helix config (excluding runtime)
 rsync -av --exclude='runtime' \
@@ -49,10 +50,26 @@ rsync -av --exclude='runtime' \
 echo "  ✓ Helix config synced (runtime excluded)"
 
 # ============================================================================
-# 3. Templates
+# 3. Fresh Configuration
 # ============================================================================
 
-echo "[3/6] Syncing templates..."
+echo "[3/7] Syncing Fresh configuration..."
+
+# Copy fresh config (excluding logs and state)
+if [ -d "$HOME/.config/fresh" ]; then
+    rsync -av --exclude='*.backup*' \
+              --exclude='.git' \
+              "$HOME/.config/fresh/" "$DOTFILES_DIR/fresh/"
+    echo "  ✓ Fresh config synced"
+else
+    echo "  ⚠ Fresh config not found at ~/.config/fresh"
+fi
+
+# ============================================================================
+# 4. Templates
+# ============================================================================
+
+echo "[4/7] Syncing templates..."
 
 # Copy templates if they exist
 if [ -f "$HOME/.editorconfig.csharp-template" ]; then
@@ -77,10 +94,10 @@ if [ -f "/tmp/test-nvim-csharp/omnisharp.json" ] && [ ! -f "$DOTFILES_DIR/templa
 fi
 
 # ============================================================================
-# 4. Scripts
+# 5. Scripts
 # ============================================================================
 
-echo "[4/6] Syncing scripts..."
+echo "[5/7] Syncing scripts..."
 
 if [ -f "$HOME/setup-dev-env.sh" ]; then
     cp "$HOME/setup-dev-env.sh" "$DOTFILES_DIR/scripts/setup-dev-env.sh"
@@ -89,10 +106,10 @@ if [ -f "$HOME/setup-dev-env.sh" ]; then
 fi
 
 # ============================================================================
-# 5. Documentation
+# 6. Documentation
 # ============================================================================
 
-echo "[5/6] Syncing documentation..."
+echo "[6/7] Syncing documentation..."
 
 # Copy all markdown guides
 for doc in DIAGNOSTICOS NOTIFICACIONES HELIX-OMNISHARP OMNISHARP-CONFIG GUIA-CSHARP SETUP-README; do
@@ -109,10 +126,10 @@ for doc in DIAGNOSTICOS NOTIFICACIONES HELIX-OMNISHARP OMNISHARP-CONFIG GUIA-CSH
 done
 
 # ============================================================================
-# 6. Git Status
+# 7. Git Status
 # ============================================================================
 
-echo "[6/6] Checking git status..."
+echo "[7/7] Checking git status..."
 echo ""
 
 cd "$DOTFILES_DIR"

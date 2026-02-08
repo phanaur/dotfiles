@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "c_sharp": {
+      "extensions": ["cs", "csx"],
+      "grammar": "C#",
+      "comment_prefix": "//",
+      "auto_indent": true
+    }
+  },
+  "lsp": {
+    "c_sharp": {
+      "command": "omnisharp-wrapper",
+      "args": ["-lsp", "--encoding", "utf-8", "--loglevel", "warning"],
+      "enabled": true,
+      "auto_start": true,
+      "initialization_options": {
+        "RoslynExtensionsOptions": {
+          "enableAnalyzersSupport": false,
+          "enableImportCompletion": true,
+          "enableDecompilationSupport": true
+        },
+        "FormattingOptions": {
+          "enableEditorConfigSupport": true
+        }
+      }
+    }
+  }
+}

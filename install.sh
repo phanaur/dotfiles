@@ -180,6 +180,11 @@ if [ -d "$HOME/.config/helix" ] || [ -L "$HOME/.config/helix" ]; then
     log_success "Backed up existing Helix config to $backup_dir/helix"
 fi
 
+if [ -d "$HOME/.config/fresh" ] || [ -L "$HOME/.config/fresh" ]; then
+    mv "$HOME/.config/fresh" "$backup_dir/fresh"
+    log_success "Backed up existing Fresh config to $backup_dir/fresh"
+fi
+
 # ============================================================================
 # 3. Create Symbolic Links
 # ============================================================================
@@ -202,6 +207,14 @@ if [ -d "$DOTFILES_DIR/helix" ]; then
     log_success "Linked Helix config"
 else
     log_warning "Helix config directory not found in dotfiles"
+fi
+
+# Fresh
+if [ -d "$DOTFILES_DIR/fresh" ]; then
+    ln -sf "$DOTFILES_DIR/fresh" "$HOME/.config/fresh"
+    log_success "Linked Fresh config"
+else
+    log_warning "Fresh config directory not found in dotfiles"
 fi
 
 # ============================================================================
@@ -460,6 +473,12 @@ else
     echo "  ✗ Helix config not linked"
 fi
 
+if [ -L "$HOME/.config/fresh" ]; then
+    echo "  ✓ Fresh config: ~/.config/fresh -> $DOTFILES_DIR/fresh"
+else
+    echo "  ✗ Fresh config not linked"
+fi
+
 if command -v claude &> /dev/null; then
     echo "  ✓ Claude Code CLI: $(claude --version)"
 else
@@ -483,6 +502,10 @@ echo "     - Check :checkhealth for any issues"
 if [ -n "$HELIX_CMD" ]; then
     echo "  4. Open Helix: $HELIX_CMD"
     echo "     - Grammars should be installed"
+fi
+if command -v fresh &> /dev/null; then
+    echo "  5. Open Fresh: fresh"
+    echo "     - C# LSP configured with OmniSharp"
 fi
 echo "  5. For C# projects, copy templates:"
 echo "     cp ~/.editorconfig.csharp-template <project>/.editorconfig"

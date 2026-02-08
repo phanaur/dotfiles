@@ -153,6 +153,38 @@ case "$DISTRO" in
         ;;
 esac
 
+# Install Fresh editor
+log_info "Installing Fresh editor..."
+if ! command -v fresh &> /dev/null; then
+    case "$DISTRO" in
+        arch)
+            # Use AUR helper (yay or paru)
+            if command -v yay &> /dev/null; then
+                yay -S --noconfirm fresh-editor-bin
+            elif command -v paru &> /dev/null; then
+                paru -S --noconfirm fresh-editor-bin
+            else
+                log_warning "No AUR helper found. Install yay or paru first, then: yay -S fresh-editor-bin"
+            fi
+            ;;
+        *)
+            # Use cargo-binstall for fast binary installation
+            if ! command -v cargo-binstall &> /dev/null; then
+                log_info "Installing cargo-binstall for faster installations..."
+                curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+            fi
+            if command -v cargo-binstall &> /dev/null; then
+                cargo binstall -y fresh-editor
+            else
+                log_warning "cargo-binstall not available. Falling back to cargo install (this will take longer)..."
+                cargo install fresh-editor
+            fi
+            ;;
+    esac
+else
+    log_success "Fresh already installed: $(fresh --version 2>&1 | head -1)"
+fi
+
 # Install .NET SDK 10
 log_info "Installing .NET SDK 10..."
 if ! command -v dotnet &> /dev/null; then
@@ -861,6 +893,13 @@ else
     log_error "Helix not found"
 fi
 
+# Check Fresh
+if command -v fresh &> /dev/null; then
+    log_success "Fresh: $(fresh --version 2>&1 | head -1)"
+else
+    log_error "Fresh not found"
+fi
+
 # Check .NET
 if command -v dotnet &> /dev/null; then
     log_success ".NET SDK: $(dotnet --version)"
@@ -925,8 +964,8 @@ echo ""
 echo "Configuration applied:"
 echo "  ✓ LazyVim with multi-language support"
 echo "  ✓ Roslyn LSP for C# (Neovim)"
-echo "  ✓ OmniSharp LSP for C# (Helix)"
-echo "  ✓ Manual save mode (both editors)"
+echo "  ✓ OmniSharp LSP for C# (Helix, Fresh)"
+echo "  ✓ Manual save mode (all editors)"
 echo "  ✓ Enhanced diagnostics (Neovim)"
 echo "  ✓ Better notifications (Neovim)"
 echo "  ✓ Configuration templates created"
@@ -942,5 +981,6 @@ echo ""
 echo "Documentation:"
 echo "  - Neovim config: ~/.config/nvim/"
 echo "  - Helix config: ~/.config/helix/"
+echo "  - Fresh config: ~/.config/fresh/"
 echo "  - Templates: ~/*.template"
 echo ""
