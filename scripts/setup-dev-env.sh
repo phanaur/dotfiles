@@ -153,6 +153,19 @@ case "$DISTRO" in
         ;;
 esac
 
+# Install Rust
+log_info "Installing Rust toolchain..."
+if ! command -v rustc &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+else
+    log_success "Rust already installed: $(rustc --version)"
+fi
+
+# Install Rust tools
+log_info "Installing Rust tools (rustfmt, clippy, rust-analyzer)..."
+rustup component add rustfmt clippy rust-analyzer
+
 # Install Fresh editor
 log_info "Installing Fresh editor..."
 if ! command -v fresh &> /dev/null; then
@@ -219,19 +232,6 @@ if command -v go &> /dev/null; then
     go install golang.org/x/tools/cmd/goimports@latest 2>/dev/null && log_success "goimports installed" || log_warning "Failed to install goimports"
     go install github.com/go-delve/delve/cmd/dlv@latest 2>/dev/null && log_success "delve debugger installed" || log_warning "Failed to install delve"
 fi
-
-# Install Rust
-log_info "Installing Rust toolchain..."
-if ! command -v rustc &> /dev/null; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
-else
-    log_success "Rust already installed: $(rustc --version)"
-fi
-
-# Install Rust tools
-log_info "Installing Rust tools (rustfmt, clippy, rust-analyzer)..."
-rustup component add rustfmt clippy rust-analyzer
 
 # Install Node.js and npm
 log_info "Installing Node.js and npm..."
