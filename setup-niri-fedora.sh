@@ -90,8 +90,10 @@ sudo dnf install -y \
 info "Instalando RPM Fusion Tainted (free + nonfree)..."
 sudo dnf install -y rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted
 
-# Actualizar metadatos de AppStream para GNOME Software
-sudo dnf groupupdate -y core
+# Actualizar metadatos (groupupdate core eliminado en DNF5)
+if ! $DNF5; then
+    sudo dnf groupupdate -y core
+fi
 success "RPM Fusion configurado."
 
 # fedora-workstation-repositories (contiene definiciones de Chrome, etc.)
@@ -128,9 +130,23 @@ fi
 # ── 3. Codecs multimedia ─────────────────────────────────────────────────────
 header "3. Codecs multimedia"
 info "Instalando codecs desde RPM Fusion..."
-sudo dnf groupupdate -y multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
-sudo dnf groupupdate -y sound-and-video
-sudo dnf install -y libdvdcss  # desde RPM Fusion free tainted
+if $DNF5; then
+    # Fedora 41+ instala ffmpeg-free por defecto; hay que sustituirlo por el
+    # ffmpeg completo de RPM Fusion (son paquetes conflictivos)
+    info "Sustituyendo ffmpeg-free por ffmpeg completo de RPM Fusion..."
+    sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing || \
+        info "ffmpeg ya es la version completa, continuando."
+    sudo dnf install -y --skip-unavailable \
+        gstreamer1-plugins-ugly gstreamer1-plugins-bad-free \
+        gstreamer1-plugins-bad-freeworld gstreamer1-plugin-openh264 \
+        pipewire-codec-aptx \
+        flac faac faad2 \
+        x264 x265
+else
+    sudo dnf groupupdate -y multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
+    sudo dnf groupupdate -y sound-and-video
+fi
+sudo dnf install -y libdvdcss
 success "Codecs instalados."
 
 # ── 4. Drivers Nvidia (solo sobremesa) ───────────────────────────────────────
@@ -174,7 +190,7 @@ fi
 
 # ── 5. Paquetes principales de Niri y entorno ────────────────────────────────
 header "5. Instalación de Niri y herramientas"
-sudo dnf install -y \
+sudo dnf install -y --skip-unavailable \
     niri \
     waybar \
     mako \
@@ -183,7 +199,6 @@ sudo dnf install -y \
     xwayland-satellite \
     gnome-keyring \
     libsecret \
-    polkit-gnome \
     swaybg \
     playerctl \
     brightnessctl \
@@ -287,7 +302,6 @@ animations {
 spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "swaybg" "-m" "fill" "-i" "/usr/share/backgrounds/gnome/adwaita-l.jxl"
-spawn-at-startup "/usr/libexec/polkit-gnome-authentication-agent-1"
 spawn-at-startup "xwayland-satellite"
 
 // ── Reglas de ventanas ────────────────────────────────────────────────────────
