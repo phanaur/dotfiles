@@ -652,7 +652,8 @@ dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 swaybg -m fill -i /usr/share/backgrounds/gnome/adwaita-l.jxl &
 mako &
 xwayland-satellite &
-~/.config/mango/waybar/launch.sh &
+dms run &
+#~/.config/mango/waybar/launch.sh &
 AUTOSTART_EOF
     chmod +x ~/.config/mango/autostart.sh
 
