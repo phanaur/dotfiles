@@ -672,15 +672,15 @@ LAUNCH_EOF
 
     cat > ~/.config/mango/screenshot.sh << 'SS_EOF'
 #!/bin/bash
-mkdir -p ~/Imágenes
-grim ~/Imágenes/screenshot-$(date +%Y%m%d-%H%M%S).png
+mkdir -p ~/Pictures/Screenshots
+grim ~/Pictures/Screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
 SS_EOF
     chmod +x ~/.config/mango/screenshot.sh
 
     cat > ~/.config/mango/screenshot-area.sh << 'SSA_EOF'
 #!/bin/bash
-mkdir -p ~/Imágenes
-grim -g "$(slurp)" ~/Imágenes/screenshot-$(date +%Y%m%d-%H%M%S).png
+mkdir -p ~/Pictures/Screenshots
+grim -g "$(slurp)" ~/Pictures/Screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
 SSA_EOF
     chmod +x ~/.config/mango/screenshot-area.sh
 
